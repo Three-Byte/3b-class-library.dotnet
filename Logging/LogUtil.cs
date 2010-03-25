@@ -48,7 +48,7 @@ namespace ThreeByte.Logging
         }
 
         public static string GetRecentEventString(){
-            string eventString = string.Empty;
+            string eventString = "Recent Events:\n";
             try {
                 Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
 
