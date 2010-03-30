@@ -60,6 +60,17 @@ namespace ThreeByte.TaskModel
             }
         }
 
+        private bool _complete = false;
+        public bool Complete {
+            get {
+                return _complete;
+            }
+            protected set {
+                _complete = value;
+                NotifyPropertyChanged("Complete");
+            }
+        }
+
         private bool _hasError = false;
         public bool HasError {
             get { return _hasError; }
@@ -159,14 +170,15 @@ namespace ThreeByte.TaskModel
             if(Completed != null) {
                 Completed(this, EventArgs.Empty);
             }
-            log.Info("Async task complete: " + Name);
+            Complete = true;
+            //log.Info("Async task complete: " + Name);
         }
 
         /// <summary>
         /// Derived classes must implement this method to provide functionality for the task
         /// </summary>
         /// <param name="e"></param>
-        public abstract void Run(BackgroundWorker bw, DoWorkEventArgs e);
+        protected abstract void Run(BackgroundWorker bw, DoWorkEventArgs e);
 
         public void Cancel() {
             _canceled = true;

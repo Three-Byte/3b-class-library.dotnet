@@ -12,6 +12,7 @@ namespace ThreeByte.TaskModel
         string Name { get; }
         string Status { get; }
         int PercentComplete { get; }
+        bool Complete { get; }
 
         bool HasError { get; }
         string Error { get; }
