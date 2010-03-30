@@ -157,9 +157,9 @@ namespace ThreeByte.TaskModel
             } else if(e.Error != null) {
                 HasError = true;
                 Error = e.Error.Message;
-                Status = "Complete";
+                Status = "[Complete] " + Status;
             } else {
-                Status = "Complete";
+                Status = "[Complete] " + Status;
             }
             _bgWorker.Dispose();
 
