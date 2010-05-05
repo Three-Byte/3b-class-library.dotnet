@@ -21,7 +21,7 @@ namespace ThreeByte.Network
 
     public class FramedNetworkLink : IDisposable, INotifyPropertyChanged
     {
-        private readonly ILog log = LogManager.GetLogger(typeof(NetworkLink));
+        private readonly ILog log = LogManager.GetLogger(typeof(FramedNetworkLink));
 
         //Observable Interface
         public event PropertyChangedEventHandler PropertyChanged;
@@ -61,7 +61,15 @@ namespace ThreeByte.Network
         /// </summary>
         public bool Enabled {
             get { return _networkLink.Enabled; }
-            set { _networkLink.Enabled = value; }
+            set {
+                _networkLink.Enabled = value;
+                if(!value) {
+                    //If the link is disabled, clear the buffer of messages
+                    lock(_incomingData) {
+                        _incomingData.Clear();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -140,8 +148,11 @@ namespace ThreeByte.Network
             while(_networkLink.HasData) {
                 lock(_incomingBuffer) {
                     byte[] buffer = _networkLink.GetMessage();
-                    //_incomingBuffer.Write(newData, 0, newData.Length);
 
+                    //Must validate this buffer - see issue #4934
+                    if(buffer == null) {
+                        break;
+                    }
                     for(int i = 0; i < buffer.Length; i++) {
                         if(_headerPos < header.Length - 1 && buffer[i] == header[_headerPos]) {
                             _headerPos++;
@@ -150,8 +161,8 @@ namespace ThreeByte.Network
                             _incomingBuffer.Position = 0; //Reset to the beginning
                         } else if(_footerPos < footer.Length - 1 && buffer[i] == footer[_footerPos]) {
                             _footerPos++;
-                        } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]){
-                            
+                        } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]) {
+
                             string newMessage = Encoding.ASCII.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
                             if(newMessage.Trim() != string.Empty) {
                                 //log.Debug("Adding Message: " + newMessage.Substring(0, Math.Min(30, newMessage.Length)));
@@ -171,7 +182,6 @@ namespace ThreeByte.Network
                             _incomingBuffer.WriteByte(buffer[i]);
                         }
                     }
-
                 }
 
             }
@@ -179,7 +189,6 @@ namespace ThreeByte.Network
             if(hasNewData && DataReceived != null) {
                 DataReceived(this, new EventArgs());
             }
-
 
         }
 
@@ -210,20 +219,32 @@ namespace ThreeByte.Network
             Encoding.ASCII.GetBytes(message, 0, message.Length, messageBytes, header.Length);
             footer.CopyTo(messageBytes, message.Length + header.Length);
 
-            _networkLink.SendMessage(messageBytes);
+            //log.Info("Debug: " + string.Format("{0} {1} {2}\r", message.Length, header.Length, messageBytes.ToString()));
+
+            if (_networkLink != null)
+                try
+                {
+                    _networkLink.SendMessage(messageBytes);
+                }
+                catch (ObjectDisposedException ode)
+                {
+                    log.Error(ode.Message);
+                }
         }
 
-
+        /// <summary>
+        /// Fetches and removes (pops) the next available message as received on this link in order (FIFO)
+        /// </summary>
+        /// <returns>null if the link is not Enabled or there are no messages currently queued to return, a string otherwise.</returns>
         public string GetMessage() {
             if(_disposed) {
                 throw new ObjectDisposedException("Cannot get message from disposed NetworkLink");
             }
 
-            //Don't do anything if the link is not enabled
+            //Return null if the link is not enabled
             if(!Enabled) return null;
 
-            string newMessage = null;//string.Empty;
-
+            string newMessage = null;
             lock(_incomingData) {
                 if(HasData) {
                     newMessage = _incomingData[0];

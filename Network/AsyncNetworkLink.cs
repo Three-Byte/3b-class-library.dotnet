@@ -135,13 +135,13 @@ namespace ThreeByte.Network
         /// <summary>
         /// Very carefully checks and shuts down the tcpClient and sets it to null
         /// </summary>
-        /// <param name="client"></param>
         private void SafeClose() {
             log.Debug("Safe Close");
             lock(_clientLock) {
                 //Resolve outstanding connections
                 if(_connectResult != null) {
                     //End the connection process
+                    _connectResult = null;
                 }
                 if(_readResult != null) {
                     //End the read process
@@ -160,6 +160,10 @@ namespace ThreeByte.Network
                     _tcpClient.Close();
                 }
                 _tcpClient = null;
+
+                lock(_incomingData) {
+                    _incomingData.Clear();
+                }
             }
         }
 
@@ -203,8 +207,7 @@ namespace ThreeByte.Network
         private void ConnectCallback(IAsyncResult asyncResult) {
             log.Info("Connect Callback: " + Address + " / " + Port);
             lock(_clientLock) {
-                try {
-                    
+                try {                 
                     _networkStream = null;
                     _tcpClient.EndConnect(asyncResult);
                     IsConnected = _tcpClient.Connected;
@@ -233,8 +236,9 @@ namespace ThreeByte.Network
         /// <summary>
         /// Asynchronously sends the tcp message, waiting until the connection is reestablihsed if necessary
         /// </summary>
-        /// <param name="message"></param>
-        public void SendMessage(byte[] message) {
+        /// <param name="message">binary message to be sent</param>
+        public void SendMessage(byte[] message)
+        {
             if(Enabled) {
                 lock(_clientLock) {
                     if(_networkStream != null) {
@@ -244,11 +248,12 @@ namespace ThreeByte.Network
                             log.Error("Cannot Write", ex);
                             Error = ex;
                             IsConnected = false;
+                            SafeClose();
                             SafeConnect();
                         }
                     } else {
                         IsConnected = false;
-                        SafeConnect(); //Attempt to reconnect
+                        SafeConnect();
                     }
                 }
             }
@@ -339,21 +344,22 @@ namespace ThreeByte.Network
             ReceiveData();
         }
 
-
+        /// <summary>
+        /// Fetches and removes (pops) the next available group of bytes as received on this link in order (FIFO)
+        /// </summary>
+        /// <returns>null if the link is not Enabled or there is no data currently queued to return, an array of bytes otherwise.</returns>
         public byte[] GetMessage() {
             if(_disposed) {
                 throw new ObjectDisposedException("Cannot get message from disposed NetworkLink");
             }
 
-            //Don't do anything if the link is not enabled
+            //Return null if the link is not enabled
             if(!Enabled) return null;
 
-            byte[] newMessage = null;// new byte[0];
-
+            byte[] newMessage = null;
             lock(_incomingData) {
                 if(HasData) {
                     newMessage = _incomingData[0];
-                    //throw new InvalidOperationException("Cannot return any data [" + newMessage + "]");
                     _incomingData.RemoveAt(0);
                 }
             }

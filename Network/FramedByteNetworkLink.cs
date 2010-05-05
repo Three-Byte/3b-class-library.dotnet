@@ -54,7 +54,15 @@ namespace ThreeByte.Network
         /// </summary>
         public bool Enabled {
             get { return _networkLink.Enabled; }
-            set { _networkLink.Enabled = value; }
+            set {
+                _networkLink.Enabled = value;
+                if(!value) {
+                    //If the link is disabled, clear the buffer of messages
+                    lock(_incomingData) {
+                        _incomingData.Clear();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -133,8 +141,11 @@ namespace ThreeByte.Network
             while(_networkLink.HasData) {
                 lock(_incomingBuffer) {
                     byte[] buffer = _networkLink.GetMessage();
-                    //_incomingBuffer.Write(newData, 0, newData.Length);
 
+                    //Must validate this buffer - see issue #4934
+                    if(buffer == null) {
+                        break;
+                    }
                     for(int i = 0; i < buffer.Length; i++) {
                         if(_headerPos < header.Length - 1 && buffer[i] == header[_headerPos]) {
                             _headerPos++;
@@ -143,13 +154,12 @@ namespace ThreeByte.Network
                             _incomingBuffer.Position = 0; //Reset to the beginning
                         } else if(_footerPos < footer.Length - 1 && buffer[i] == footer[_footerPos]) {
                             _footerPos++;
-                        } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]){
-                            
-                            //string newMessage = Encoding.ASCII.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
-                            byte[] newData = new byte[(int)_incomingBuffer.Position];
-                            Array.Copy(_incomingBuffer.GetBuffer(), 0, newData, 0, newData.Length);
+                        } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]) {
 
-                            if(newData.Length != 0) {
+                            byte[] newData = new byte[(int)_incomingBuffer.Position];
+                            Array.Copy(_incomingBuffer.GetBuffer(), newData, newData.Length);
+                            //string newMessage = Encoding.ASCII.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
+                            if(newData.Length > 0) {
                                 //log.Debug("Adding Message: " + newMessage.Substring(0, Math.Min(30, newMessage.Length)));
                                 lock(_incomingData) {
                                     _incomingData.Add(newData);
@@ -167,64 +177,97 @@ namespace ThreeByte.Network
                             _incomingBuffer.WriteByte(buffer[i]);
                         }
                     }
-
                 }
-
             }
 
             if(hasNewData && DataReceived != null) {
                 DataReceived(this, new EventArgs());
             }
-
-
         }
 
         /// <summary>
         /// Asynchronously sends the tcp message, waiting until the connection is reestablihsed if necessary
         /// </summary>
         /// <param name="message"></param>
-        public void SendMessage(byte[] data) {
+        public void SendMessage(string message) {
+            SendData(Encoding.ASCII.GetBytes(message));
+        }
+
+        /// <summary>
+        /// Asynchronously sends the tcp data, waiting until the connection is reestablihsed if necessary
+        /// </summary>
+        /// <param name="message"></param>
+        public void SendData(byte[] data) {
             if(_disposed) {
-                throw new ObjectDisposedException("Cannot send message on disposed FramedByteNetworkLink");
+                throw new ObjectDisposedException("Cannot send message on disposed FramedNetworkLink");
             }
 
             //Don't do anything if the link is not enabled
-            if(!Enabled) return;
+            if(!Enabled)
+                return;
 
             //Add the header and footer
             byte[] header = new byte[0];
-            if(SendFrame != null && SendFrame.Header != null){
+            if(SendFrame != null && SendFrame.Header != null) {
                 header = SendFrame.Header;
             }
             byte[] footer = new byte[0];
-            if(SendFrame != null && SendFrame.Footer != null){
+            if(SendFrame != null && SendFrame.Footer != null) {
                 footer = SendFrame.Footer;
             }
             byte[] messageBytes = new byte[data.Length + header.Length + footer.Length];
 
             header.CopyTo(messageBytes, 0);
             data.CopyTo(messageBytes, header.Length);
-            //Encoding.ASCII.GetBytes(message, 0, message.Length, messageBytes, header.Length);
             footer.CopyTo(messageBytes, data.Length + header.Length);
 
-            _networkLink.SendMessage(messageBytes);
+            //log.Info("Debug: " + string.Format("{0} {1} {2}\r", message.Length, header.Length, messageBytes.ToString()));
+
+            if(_networkLink != null)
+                try {
+                    _networkLink.SendMessage(messageBytes);
+                } catch(ObjectDisposedException ode) {
+                    log.Error(ode.Message);
+                }
         }
 
-
-        public byte[] GetMessage() {
+        /// <summary>
+        /// Fetches and removes (pops) the next available message as received on this link in order (FIFO)
+        /// </summary>
+        /// <returns>null if the link is not Enabled or there are no messages currently queued to return, a string otherwise.</returns>
+        public string GetMessage() {
             if(_disposed) {
                 throw new ObjectDisposedException("Cannot get message from disposed NetworkLink");
             }
 
-            //Don't do anything if the link is not enabled
+            //Return null if the link is not enabled
             if(!Enabled) return null;
 
-            byte[] newData = null;//string.Empty;
+            byte[] data = GetData();
+            if(data == null){
+                return null;
+            }
+            return Encoding.ASCII.GetString(data);
+        }
 
+
+        /// <summary>
+        /// Fetches and removes (pops) the next available group of bytes as received on this link in order (FIFO)
+        /// </summary>
+        /// <returns>null if the link is not Enabled or there is no data currently queued to return, an array of bytes otherwise.</returns>
+        public byte[] GetData() {
+            if(_disposed) {
+                throw new ObjectDisposedException("Cannot get message from disposed NetworkLink");
+            }
+
+            //Return null if the link is not enabled
+            if(!Enabled)
+                return null;
+
+            byte[] newData = null;
             lock(_incomingData) {
                 if(HasData) {
                     newData = _incomingData[0];
-                    //throw new InvalidOperationException("Cannot return any data [" + newMessage + "]");
                     _incomingData.RemoveAt(0);
                 }
             }
