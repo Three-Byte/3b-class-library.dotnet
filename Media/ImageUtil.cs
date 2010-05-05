@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.IO;
+using System.Data.Linq;
 
 namespace ThreeByte.Media
 {
@@ -39,6 +40,23 @@ namespace ThreeByte.Media
             }
 
             surface.LayoutTransform = xform;
+        }
+
+        public static string SerializeBinary(Binary bits) {
+                StringBuilder sb = new StringBuilder(bits.Length * 2);
+                foreach(byte b in bits.ToArray()) {
+                    sb.Append(String.Format("{0:x2}", b));
+                }
+                return sb.ToString();
+        }
+
+        public static Binary UnserializeBinary(string chars) {
+
+            byte[] byteArray = new byte[chars.Length / 2];
+            for(int i = 0; i < chars.Length; i = i+2) {
+                byteArray[i/2] = Convert.ToByte(chars.Substring(i, 2), 16);
+            }
+            return new Binary(byteArray);
         }
 
     }
