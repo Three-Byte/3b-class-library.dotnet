@@ -83,6 +83,7 @@
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\HideOnNullConverter.cs" />
     <Compile Include="Converters\IsEnabledBackgroundConverter.cs" />
+    <Compile Include="Converters\UppercaseConverter.cs" />
     <Compile Include="Converters\ListViewItemStyleSelector.cs" />
     <Compile Include="Converters\NullableBooleanConverter.cs" />
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
