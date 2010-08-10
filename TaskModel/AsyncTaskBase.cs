@@ -137,7 +137,7 @@ namespace ThreeByte.TaskModel
             try {
                 Run(bw, e);
             } catch(Exception ex) {
-                log.Warn("Error running the online task process: " + Name, ex);
+                log.Error("Error running the online task process: " + Name, ex);
                 HasError = true;
                 Error += "Fatal Error running task: " + ex.Message + "\n";
             }
