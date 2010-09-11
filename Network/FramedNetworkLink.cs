@@ -186,7 +186,7 @@ namespace ThreeByte.Network
 
             }
 
-            if(hasNewData && DataReceived != null) {
+            if(hasNewData && DataReceived != null && !_disposed) {
                 DataReceived(this, new EventArgs());
             }
 

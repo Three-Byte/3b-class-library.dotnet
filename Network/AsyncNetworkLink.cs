@@ -126,6 +126,7 @@ namespace ThreeByte.Network
             if(_disposed) {
                 return;  //Dispose has already been called
             }
+            _disposed = true;
             log.Info("Cleaning up network resources");
 
             SafeClose();
@@ -173,6 +174,9 @@ namespace ThreeByte.Network
         /// Carefully check to see if the link is connected or can be reestablished
         /// </summary>
         private void SafeConnect() {
+            if(_disposed) {
+                return;
+            }
 
             lock(_clientLock) {
                 if(_connectResult != null) {
@@ -337,7 +341,7 @@ namespace ThreeByte.Network
                 }
             }
             
-            if(hasNewData && DataReceived != null) {
+            if(hasNewData && DataReceived != null && !_disposed) {
                 DataReceived(this, new EventArgs());
             }
 

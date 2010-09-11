@@ -22,8 +22,8 @@ namespace ThreeByte.Network
         /// </summary>
         /// <param name="MACAddress">In the format "001F2903AF4B"</param>
         public WakeOnLan(string MACAddress) : base() {
-            if(MACAddress == null) {
-                throw new ArgumentNullException("MAC Address cannot be null");
+            if(MACAddress == null || MACAddress.Length != 12) {
+                throw new ArgumentNullException("MAC Address must be specified as 12 hex characters");
             }
             _macAddress = MACAddress;
         }
@@ -33,6 +33,8 @@ namespace ThreeByte.Network
             if(this.Active) {
                 this.Client.SetSocketOption(SocketOptionLevel.Socket,
                                           SocketOptionName.Broadcast, 0);
+            } else {
+                throw new ArgumentNullException("The UDP Client is not active");
             }
 
             int counter = 0;
@@ -56,7 +58,6 @@ namespace ThreeByte.Network
 
             //now send wake up packet
             this.Send(bytes, counter);
-
         }
 
     }

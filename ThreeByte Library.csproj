@@ -83,6 +83,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\ListViewItemStyleSelector.cs" />
     <Compile Include="Converters\BooleanOppositeConverter.cs" />
     <Compile Include="Converters\ByteStreamToImageConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Media\PixelSpace.cs" />
     <Compile Include="Network\AsyncNetworkLink.cs" />
     <Compile Include="Network\BroadcastListener.cs" />
+    <Compile Include="Network\NetworkServerManager.cs" />
     <Compile Include="Network\FrameBasedEventManager.cs" />
     <Compile Include="Network\FramedByteNetworkLink.cs" />
     <Compile Include="Network\FramedNetworkLink.cs" />
