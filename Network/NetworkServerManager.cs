@@ -85,7 +85,7 @@ namespace ThreeByte.Network
         public event EventHandler<TcpClientEventArgs> ClientPurged;
 
         public void Start() {
-            log.Debug("Listerner Start: " + Port);
+            log.Debug("Listener Start: " + Port);
             _stopped = false;
             try {
                 _tcpListener.Start();
