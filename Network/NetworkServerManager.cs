@@ -56,13 +56,14 @@ namespace ThreeByte.Network
         private object _serverLock = new object();
 
         private IAsyncResult _acceptResult = null;
-
+        private Timer _purgeTimer;
 
         public NetworkServerManager(int port) {
             Port = port;
             CurrentClients = new ObservableCollection<TcpClient>();
 
             _tcpListener = new TcpListener(IPAddress.Any, Port);
+            _purgeTimer = new Timer(PurgeTimer_Tick, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
         }
 
         
@@ -78,6 +79,8 @@ namespace ThreeByte.Network
             }
             log.Info("Cleaning up network resources");
 
+            _purgeTimer.Change(TimeSpan.FromMilliseconds(-1), TimeSpan.FromMilliseconds(-1));
+            _purgeTimer.Dispose();
             Stop();
         }
 
@@ -139,6 +142,10 @@ namespace ThreeByte.Network
                 log.Error("Error stopping listener", ex);
                 Error = ex;
             }
+        }
+
+        public void PurgeTimer_Tick(object state) {
+            PurgeDisconnectedClients();
         }
 
         public void PurgeDisconnectedClients() {
