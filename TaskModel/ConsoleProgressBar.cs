@@ -12,11 +12,14 @@ namespace ThreeByte.TaskModel
         public int Current { get; private set; }
         public double Percent { get; private set; }
 
+        private bool _isComplete = false;
+
         public void Init(int total) {
             Total = total;
             Current = 0;
             Percent = 0.0;
             Console.CursorVisible = false;
+            _isComplete = false;
             Draw();
         }
 
@@ -39,11 +42,18 @@ namespace ThreeByte.TaskModel
         }
 
         public void Complete() {
-            Console.WriteLine("\r[==================================================]\tDone.   ");
-            Console.CursorVisible = true;
+            if (!_isComplete) {
+                Console.WriteLine("\r[==================================================]\tDone.   ");
+                Console.CursorVisible = true;
+                _isComplete = true;
+            }
         }
 
         private void Draw() {
+            if (_isComplete) {
+                throw new InvalidOperationException("Cannot update after progress is complete");
+            }
+
             string output = string.Empty;
             Percent = System.Math.Round((Current * 100.0) / (double)Total, 2);
 
