@@ -24,6 +24,11 @@ namespace ThreeByte.TaskModel
             Tick(1);
         }
 
+        public void TickTo(int current) {
+            Current = current;
+            Tick(0);
+        }
+
         public void Tick(int increment) {
             Current += increment;
             if(Current >= Total) {
