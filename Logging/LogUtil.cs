@@ -64,5 +64,9 @@ namespace ThreeByte.Logging
 
         }
 
+        public static void CreateEventLog(string appName, string logName) {
+            System.Diagnostics.EventLog.CreateEventSource(appName, logName);
+        }
+
     }
 }

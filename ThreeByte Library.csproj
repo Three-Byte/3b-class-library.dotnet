@@ -108,11 +108,15 @@
     <Compile Include="Network\ShutdownTrigger.cs" />
     <Compile Include="Network\WakeOnLan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\Encryptor.cs" />
     <Compile Include="TaskModel\ConsoleProgressBar.cs" />
     <Compile Include="Schedule\ScheduleConfiguration.cs" />
     <Compile Include="Schedule\ScheduleService.cs" />
     <Compile Include="TaskModel\AsyncTaskBase.cs" />
     <Compile Include="TaskModel\IAsyncTask.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="3byte.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
