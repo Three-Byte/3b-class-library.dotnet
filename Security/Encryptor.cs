@@ -20,8 +20,12 @@ namespace ThreeByte.Security
         public string Encrypt(string input) {
             using(MemoryStream outStream = new MemoryStream()) {
                 using(CryptoStream encStream = new CryptoStream(outStream, TDES.CreateEncryptor(), CryptoStreamMode.Write)) {
-                    encStream.Write(Encoding.ASCII.GetBytes(input), 0, input.Length);
-                    return Encoding.ASCII.GetString(outStream.GetBuffer());
+                    using(StreamWriter sWriter = new StreamWriter(encStream)) {
+                        sWriter.Write(input);
+                    }
+
+                    string encryptedString = Convert.ToBase64String(outStream.ToArray());
+                    return encryptedString;
                 }
             }
         }
@@ -29,10 +33,15 @@ namespace ThreeByte.Security
         public string Decrypt(string input) {
             using(MemoryStream outStream = new MemoryStream()) {
                 using(CryptoStream encStream = new CryptoStream(outStream, TDES.CreateDecryptor(), CryptoStreamMode.Write)) {
-                    encStream.Write(Encoding.ASCII.GetBytes(input), 0, input.Length);
-                    return Encoding.ASCII.GetString(outStream.GetBuffer());
+                    byte[] encryptedBytes = Convert.FromBase64String(input);
+                    encStream.Write(encryptedBytes, 0, encryptedBytes.Length);
+                }
+                using(StreamReader sWriter = new StreamReader(new MemoryStream(outStream.ToArray()))) {
+                    string decrypted = sWriter.ReadToEnd();
+                    return decrypted;
                 }
             }
+
         }
         
         public static readonly Encryptor Default;
@@ -43,5 +52,6 @@ namespace ThreeByte.Security
             MD5 md5 = new MD5CryptoServiceProvider();
             Default = new Encryptor(md5.ComputeHash(Encoding.ASCII.GetBytes(SEED_KEY)), SEED_IV);
         }
+
     }
 }
