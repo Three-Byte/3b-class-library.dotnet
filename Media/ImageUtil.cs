@@ -59,5 +59,47 @@ namespace ThreeByte.Media
             return new Binary(byteArray);
         }
 
+
+        public static string EncodeBitmapImage(BitmapImage image, BitmapEncoder encoder = null) {
+            //Default to PNG Encoding
+            if(encoder == null) {
+                encoder = new PngBitmapEncoder();
+            }
+
+            FormatConvertedBitmap formattedIcon = new FormatConvertedBitmap();
+            formattedIcon.BeginInit();
+            formattedIcon.Source = image;
+            formattedIcon.DestinationFormat = PixelFormats.Bgra32;//.Rgb24;
+            formattedIcon.EndInit();
+            BitmapFrame frame = BitmapFrame.Create(formattedIcon);
+
+            encoder.Frames.Add(frame);
+            MemoryStream mem = new MemoryStream();
+            encoder.Save(mem);
+
+            byte[] graphicBytes = mem.GetBuffer();
+            mem.Dispose();
+
+            return Convert.ToBase64String(graphicBytes, Base64FormattingOptions.InsertLineBreaks);
+        }
+
+
+        public static BitmapImage DecodeBitmapImage(string encoded) {
+
+            byte[] graphicBytes = Convert.FromBase64String(encoded);
+            
+            BitmapImage image = new BitmapImage();
+            using(MemoryStream memStream = new MemoryStream(graphicBytes)) {
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.StreamSource = memStream;
+                image.EndInit();
+                image.Freeze();
+            }
+
+            return image;
+        }
+
+    
     }
 }
