@@ -15,20 +15,31 @@ namespace ThreeByte.Media
         public static readonly Size DefaultPortraitSize = new Size(768, 1024);
         public static readonly Size DefaultLanscapeSize = new Size(DefaultPortraitSize.Height, DefaultPortraitSize.Width);
 
-        public static void SaveToBitmap(FrameworkElement surface, string filename) {
+        public static void SaveToBitmap(FrameworkElement surface, string filename, Size size = default(Size)) {
             Transform xform = surface.LayoutTransform;
             surface.LayoutTransform = null;
 
+            if(size == default(Size)) {
+                size = new Size(surface.ActualWidth, surface.ActualWidth);
+            }
+            //int width = (int)surface.Width;
+            //int height = (int)surface.Height;
 
-            int width = (int)surface.Width;
-            int height = (int)surface.Height;
+            //Size sSize = new Size(width, height);
+            surface.Measure(size);
+            surface.Arrange(new Rect(size));
+            surface.UpdateLayout();
 
-            Size sSize = new Size(width, height);
-            surface.Measure(sSize);
-            surface.Arrange(new Rect(sSize));
-
-            RenderTargetBitmap renderBitmap = new RenderTargetBitmap(width, height, 96, 96, PixelFormats.Pbgra32);
-            renderBitmap.Render(surface);
+            //RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)(size.Width), (int)(size.Height), 96, 96, PixelFormats.Pbgra32);
+            //renderBitmap.Render(surface);
+            RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)(size.Width), (int)(size.Height), 96, 96, PixelFormats.Pbgra32);
+            DrawingVisual dv = new DrawingVisual();
+            using(DrawingContext ctx = dv.RenderOpen()) {
+                VisualBrush vb = new VisualBrush(surface);
+                ctx.DrawRectangle(vb, null, new Rect(new Point(), size));
+            }
+            renderBitmap.Render(dv);
+            renderBitmap.Freeze();
 
             string dir = System.IO.Path.GetDirectoryName(filename);
             if(dir.Trim() != string.Empty) {
@@ -49,7 +60,7 @@ namespace ThreeByte.Media
             surface.LayoutTransform = null;
 
             if(size == default(Size)) {
-                size = new Size(surface.Width, surface.Height);
+                size = new Size(surface.ActualWidth, surface.ActualWidth);
             }
             //int width = (int)surface.Width;
             //int height = (int)surface.Height;
@@ -66,18 +77,6 @@ namespace ThreeByte.Media
             }
             renderBitmap.Render(dv);
             renderBitmap.Freeze();
-
-            ////renderBitmap.
-            //string dir = System.IO.Path.GetDirectoryName(filename);
-            //if(dir.Trim() != string.Empty) {
-            //    Directory.CreateDirectory(System.IO.Path.GetDirectoryName(filename));
-            //}
-
-            //using(FileStream fStream = new FileStream(filename, FileMode.Create)) {
-            //    PngBitmapEncoder pngEncoder = new PngBitmapEncoder();
-            //    pngEncoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-            //    pngEncoder.Save(fStream);
-            //}
 
             surface.LayoutTransform = xform;
             return renderBitmap;
