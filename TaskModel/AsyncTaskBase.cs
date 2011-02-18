@@ -137,7 +137,7 @@ namespace ThreeByte.TaskModel
             try {
                 Run(bw, e);
             } catch(Exception ex) {
-                log.Error("Error running the online task process: " + Name, ex);
+                log.Error("Error running the task process: " + Name, ex);
                 HasError = true;
                 Error += "Fatal Error running task: " + ex.Message + "\n";
             }
@@ -152,14 +152,14 @@ namespace ThreeByte.TaskModel
         private void _bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e) {
             if(e.Cancelled) {
                 HasError = true;
-                Error = "The operation was cancelled";
-                Status = "The operation was cancelled";
+                Error = "The operation was canceled";
+                Status = "The operation was canceled";
             } else if(e.Error != null) {
                 HasError = true;
                 Error = e.Error.Message;
-                Status = "[Complete] " + Status;
+                //Status = "[Complete] " + Status;
             } else {
-                Status = "[Complete] " + Status;
+                //Status = "[Complete] " + Status;
             }
             _bgWorker.Dispose();
 
