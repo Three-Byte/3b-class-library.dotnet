@@ -20,7 +20,7 @@ namespace ThreeByte.Media
             surface.LayoutTransform = null;
 
             if(size == default(Size)) {
-                size = new Size(surface.ActualWidth, surface.ActualWidth);
+                size = new Size(surface.ActualWidth, surface.ActualHeight);
             }
             //int width = (int)surface.Width;
             //int height = (int)surface.Height;
@@ -60,7 +60,7 @@ namespace ThreeByte.Media
             surface.LayoutTransform = null;
 
             if(size == default(Size)) {
-                size = new Size(surface.ActualWidth, surface.ActualWidth);
+                size = new Size(surface.ActualWidth, surface.ActualHeight);
             }
             //int width = (int)surface.Width;
             //int height = (int)surface.Height;

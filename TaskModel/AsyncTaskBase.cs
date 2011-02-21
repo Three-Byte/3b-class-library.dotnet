@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
 using log4net;
+using System.Threading;
 
 namespace ThreeByte.TaskModel
 {
@@ -71,6 +72,8 @@ namespace ThreeByte.TaskModel
             }
         }
 
+        public bool Canceled { get { return _canceled; } }
+
         private bool _hasError = false;
         public bool HasError {
             get { return _hasError; }
@@ -130,6 +133,20 @@ namespace ThreeByte.TaskModel
             _bgWorker.RunWorkerAsync();
         }
 
+        private object _taskLock = new object();
+        public void Join(BackgroundWorker parentBw) {
+            lock(_taskLock) {
+                while(!Complete) {
+                    //Periodically poll to see if the parent was cancelled
+                    if(parentBw.CancellationPending) {
+                        this.Cancel();
+                    }
+                    Monitor.Wait(_taskLock, TimeSpan.FromMilliseconds(500));
+                }
+            }
+        }
+
+
         private void _bgWorker_DoWork(object sender, DoWorkEventArgs e) {
             BackgroundWorker bw = (BackgroundWorker)sender;
             //Call to do the bulk of the work
@@ -167,10 +184,14 @@ namespace ThreeByte.TaskModel
         }
 
         void DoComplete() {
+            lock(_taskLock) {
+                //Allowed joined parent tasks to complete
+                Complete = true;
+                Monitor.Pulse(_taskLock);
+            }         
             if(Completed != null) {
                 Completed(this, EventArgs.Empty);
             }
-            Complete = true;
             //log.Info("Async task complete: " + Name);
         }
 
