@@ -12,7 +12,7 @@ namespace ThreeByte.Media
 {
     public static class ImageUtil
     {
-        public static readonly Size DefaultPortraitSize = new Size(768, 1024);
+        public static readonly Size DefaultPortraitSize = new Size(768, 1004);
         public static readonly Size DefaultLanscapeSize = new Size(DefaultPortraitSize.Height, DefaultPortraitSize.Width);
 
         public static void SaveToBitmap(FrameworkElement surface, string filename, Size size = default(Size)) {
@@ -66,8 +66,8 @@ namespace ThreeByte.Media
             //int height = (int)surface.Height;
 
             //Size sSize = new Size(width, height);
-            surface.Measure(size);
-            surface.Arrange(new Rect(size));
+            //surface.Measure(size);
+            //surface.Arrange(new Rect(size));
 
             RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)(size.Width), (int)(size.Height), 96, 96, PixelFormats.Pbgra32);
             DrawingVisual dv = new DrawingVisual();
