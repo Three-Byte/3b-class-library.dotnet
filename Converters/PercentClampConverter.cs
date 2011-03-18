@@ -8,10 +8,18 @@ namespace ThreeByte.Converters
 {
     public class PercentClampConverter : IValueConverter
     {
+        public int Minimum { get; set; }
+        public int Maximum { get; set; }
+
+        public PercentClampConverter() {
+            Minimum = 24;
+            Maximum = 72;  //Defaults
+        }
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             int intValue = (int)value;
 			
-			return Math.Min(72, Math.Max(24, intValue));
+			return Math.Min(Maximum, Math.Max(Minimum, intValue));
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
