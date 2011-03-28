@@ -12,8 +12,8 @@ namespace ThreeByte.Converters
         public int Maximum { get; set; }
 
         public PercentClampConverter() {
-            Minimum = 24;
-            Maximum = 72;  //Defaults
+            Minimum = 18;
+            Maximum = 48;  //Defaults
         }
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
