@@ -18,6 +18,7 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,7 +31,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -100,9 +100,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controls\DesignerCanvas.cs" />
     <Compile Include="Controls\ListViewItemStyleSelector.cs" />
+    <Compile Include="Controls\ResizingAdorner.cs" />
     <Compile Include="Converters\BooleanOppositeConverter.cs" />
     <Compile Include="Converters\ByteStreamToImageConverter.cs" />
+    <Compile Include="Converters\FillToStretchConverter.cs" />
     <Compile Include="Converters\IsNullConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\HideOnNullConverter.cs" />
@@ -116,9 +119,11 @@
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="Logging\LogUtil.cs" />
     <Compile Include="Logging\RecentEventAppender.cs" />
+    <Compile Include="Media\Boundary.cs" />
     <Compile Include="Media\ElapsedTimer.cs" />
     <Compile Include="Media\ImageUtil.cs" />
     <Compile Include="Media\PixelSpace.cs" />
+    <Compile Include="Media\TemplateRegion.cs" />
     <Compile Include="Network\AsyncNetworkLink.cs" />
     <Compile Include="Network\BroadcastListener.cs" />
     <Compile Include="Network\NetworkServerManager.cs" />
