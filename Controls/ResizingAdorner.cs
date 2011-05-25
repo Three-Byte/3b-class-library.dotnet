@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Controls;
 using System.Windows.Shapes;
+using ThreeByte.Media;
 
 namespace ThreeByte.Controls
 {
@@ -16,12 +17,16 @@ namespace ThreeByte.Controls
     {
         private Thumb topLeft, topRight, bottomLeft, bottomRight;
         private Rectangle overlay;
+        private Boundary clampBoundary = Boundary.Universe;
 
         VisualCollection visualChildren;
 
-        public ResizingAdorner(UIElement adornedElement)
+        public ResizingAdorner(UIElement adornedElement, Boundary boundary = null)
             : base(adornedElement) {
 
+                if(boundary != null) {
+                    clampBoundary = boundary;
+                }
             visualChildren = new VisualCollection(this);
 
             topLeft = BuildAdorner(Cursors.SizeNWSE);
@@ -52,26 +57,28 @@ namespace ThreeByte.Controls
 
             ConformSize(adornedElement);
 
+            double oldLeft = Canvas.GetLeft(adornedElement);
+            double newLeft = oldLeft + e.HorizontalChange;
+            newLeft = DesignerCanvas.ClampLeft(adornedElement, clampBoundary, newLeft);
+            Canvas.SetLeft(adornedElement, newLeft);
+
+            double oldTop = Canvas.GetTop(adornedElement);
+            double newTop = oldTop + e.VerticalChange;
+            newTop = DesignerCanvas.ClampTop(adornedElement, clampBoundary, newTop);
+            Canvas.SetTop(adornedElement, newTop);
+
             double oldWidth = adornedElement.Width;
             double newWidth = Math.Max(adornedElement.Width - e.HorizontalChange, thisThumb.DesiredSize.Width);
-            newWidth = DesignerCanvas.ClampWidth(adornedElement, DesignerCanvas.DefaultScreen, newWidth);
+            newWidth = DesignerCanvas.ClampWidth(adornedElement, clampBoundary, newWidth);
 
             double oldHeight = adornedElement.Height;
             double newHeight = Math.Max(adornedElement.Height - e.VerticalChange, thisThumb.DesiredSize.Height);
-            newHeight = DesignerCanvas.ClampHeight(adornedElement, DesignerCanvas.DefaultScreen, newHeight);
+            newHeight = DesignerCanvas.ClampHeight(adornedElement, clampBoundary, newHeight);
 
             adornedElement.Width = newWidth;
             adornedElement.Height = newHeight;
 
-            double oldLeft = Canvas.GetLeft(adornedElement);
-            double newLeft = oldLeft - (newWidth - oldWidth);
-            newLeft = DesignerCanvas.ClampLeft(adornedElement, DesignerCanvas.DefaultScreen, newLeft);
-            Canvas.SetLeft(adornedElement, newLeft);
-
-            double oldTop = Canvas.GetTop(adornedElement);
-            double newTop = oldTop - (newHeight - oldHeight);
-            newTop = DesignerCanvas.ClampTop(adornedElement, DesignerCanvas.DefaultScreen, newTop);
-            Canvas.SetTop(adornedElement, newTop);
+            
         }
 
         void topRight_DragDelta(object sender, DragDeltaEventArgs e) {
@@ -86,18 +93,18 @@ namespace ThreeByte.Controls
 
             double oldWidth = adornedElement.Width;
             double newWidth = Math.Max(adornedElement.Width + e.HorizontalChange, thisThumb.DesiredSize.Width);
-            newWidth = DesignerCanvas.ClampWidth(adornedElement, DesignerCanvas.DefaultScreen, newWidth);
+            newWidth = DesignerCanvas.ClampWidth(adornedElement, clampBoundary, newWidth);
 
             double oldHeight = adornedElement.Height;
             double newHeight = Math.Max(adornedElement.Height - e.VerticalChange, thisThumb.DesiredSize.Height);
-            newHeight = DesignerCanvas.ClampHeight(adornedElement, DesignerCanvas.DefaultScreen, newHeight);
+            newHeight = DesignerCanvas.ClampHeight(adornedElement, clampBoundary, newHeight);
 
             adornedElement.Width = newWidth;
             adornedElement.Height = newHeight;
 
             double oldTop = Canvas.GetTop(adornedElement);
             double newTop = oldTop - (newHeight - oldHeight);
-            newTop = DesignerCanvas.ClampTop(adornedElement, DesignerCanvas.DefaultScreen, newTop);
+            newTop = DesignerCanvas.ClampTop(adornedElement, clampBoundary, newTop);
             Canvas.SetTop(adornedElement, newTop);
         }
         
@@ -111,21 +118,23 @@ namespace ThreeByte.Controls
 
             ConformSize(adornedElement);
 
+            double oldLeft = Canvas.GetLeft(adornedElement);
+            double newLeft = oldLeft + e.HorizontalChange;
+            newLeft = DesignerCanvas.ClampLeft(adornedElement, clampBoundary, newLeft);
+            Canvas.SetLeft(adornedElement, newLeft);
+
             double oldWidth = adornedElement.Width;
             double newWidth = Math.Max(adornedElement.Width - e.HorizontalChange, thisThumb.DesiredSize.Width);
-            newWidth = DesignerCanvas.ClampWidth(adornedElement, DesignerCanvas.DefaultScreen, newWidth);
+            newWidth = DesignerCanvas.ClampWidth(adornedElement, clampBoundary, newWidth);
 
             double oldHeight = adornedElement.Height;
             double newHeight = Math.Max(adornedElement.Height + e.VerticalChange, thisThumb.DesiredSize.Height);
-            newHeight = DesignerCanvas.ClampHeight(adornedElement, DesignerCanvas.DefaultScreen, newHeight);
+            newHeight = DesignerCanvas.ClampHeight(adornedElement, clampBoundary, newHeight);
 
             adornedElement.Width = newWidth;
             adornedElement.Height = newHeight;
 
-            double oldLeft = Canvas.GetLeft(adornedElement);
-            double newLeft = oldLeft - (newWidth - oldWidth);
-            newLeft = DesignerCanvas.ClampLeft(adornedElement, DesignerCanvas.DefaultScreen, newLeft);
-            Canvas.SetLeft(adornedElement, newLeft);
+            
         }
 
         void bottomRight_DragDelta(object sender, DragDeltaEventArgs e) {
@@ -140,11 +149,11 @@ namespace ThreeByte.Controls
 
             double oldWidth = adornedElement.Width;
             double newWidth = Math.Max(adornedElement.Width + e.HorizontalChange, thisThumb.DesiredSize.Width);
-            newWidth = DesignerCanvas.ClampWidth(adornedElement, DesignerCanvas.DefaultScreen, newWidth);
+            newWidth = DesignerCanvas.ClampWidth(adornedElement, clampBoundary, newWidth);
 
             double oldHeight = adornedElement.Height;
             double newHeight = Math.Max(adornedElement.Height + e.VerticalChange, thisThumb.DesiredSize.Height);
-            newHeight = DesignerCanvas.ClampHeight(adornedElement, DesignerCanvas.DefaultScreen, newHeight);
+            newHeight = DesignerCanvas.ClampHeight(adornedElement, clampBoundary, newHeight);
 
             adornedElement.Width = newWidth;
             adornedElement.Height = newHeight;

@@ -20,7 +20,7 @@ namespace ThreeByte.Controls
 
         private bool _mouseIsDown;
         private bool _isDragging;
-        //private bool _isSelected = false;
+
         public FrameworkElement SelectedItem;
 
         //Drag testing
@@ -29,6 +29,19 @@ namespace ThreeByte.Controls
 
         public event EventHandler<ItemDeleteEventArgs> ItemDeleted;
 
+        private Boundary _bounds;
+        public Boundary Bounds {
+            get {
+                if(_bounds != null) {
+                    return _bounds;
+                }
+                //Else construct bounds based on current size
+                return new Boundary() { MinX = 0, MinY = 0, MaxX = ActualWidth, MaxY = ActualHeight };
+            }
+            set {
+                _bounds = value;
+            }
+        }
 
         #region Attached Properties
 
@@ -97,7 +110,7 @@ namespace ThreeByte.Controls
                     _isDragging = true;
                 }
 
-                if(_isDragging) {
+                if(_isDragging && SelectedItem != null) {
                     
                     Point newPosition = Mouse.GetPosition(this);
                     Boundary bounds = Boundary.FromFrameworkElement(this);
@@ -127,7 +140,9 @@ namespace ThreeByte.Controls
 
         private void Deselect() {
             if(SelectedItem != null) {
-                adornerLayer.Remove(adornerLayer.GetAdorners(SelectedItem)[0]);
+                foreach(Adorner a in adornerLayer.GetAdorners(SelectedItem)) {
+                    adornerLayer.Remove(a);
+                }
                 SelectedItem = null;
             }
         }
@@ -149,7 +164,8 @@ namespace ThreeByte.Controls
                 _elementStartPosition = new Point(Canvas.GetLeft(SelectedItem), Canvas.GetTop(SelectedItem));
 
                 adornerLayer = AdornerLayer.GetAdornerLayer(SelectedItem);
-                adornerLayer.Add(new ResizingAdorner(SelectedItem));
+                //Create new Boundary
+                adornerLayer.Add(new ResizingAdorner(SelectedItem, Bounds));
                 //_isSelected = true;
                 e.Handled = true;
             }
