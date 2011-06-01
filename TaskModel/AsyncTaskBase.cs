@@ -156,7 +156,7 @@ namespace ThreeByte.TaskModel
             } catch(Exception ex) {
                 log.Error("Error running the task process: " + Name, ex);
                 HasError = true;
-                Error += "Fatal Error running task: " + ex.Message + "\n";
+                Error += ex.Message + "\n";
             }
         }
 
