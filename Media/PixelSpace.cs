@@ -3,15 +3,63 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using System.ComponentModel;
 
 namespace ThreeByte.Media
 {
-    public class PixelSpace
+    public class PixelSpace : INotifyPropertyChanged
     {
-        public int X;
-        public int Y;
-        public int W;
-        public int H;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void NotifyPropertyChanged(string propertyName) {
+            if(PropertyChanged != null) {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private int _x;
+        public int X {
+            get {
+                return _x;
+            }
+            set {
+                _x = value;
+                NotifyPropertyChanged("X");
+            }
+        }
+
+        private int _y;
+        public int Y {
+            get {
+                return _y;
+            }
+            set {
+                _y = value;
+                NotifyPropertyChanged("Y");
+            }
+        }
+
+        private int _w;
+        public int W {
+            get {
+                return _w;
+            }
+            set {
+                _w = value;
+                NotifyPropertyChanged("W");
+            }
+        }
+
+        private int _h;
+        public int H {
+            get {
+                return _h;
+            }
+            set {
+                _h = value;
+                NotifyPropertyChanged("H");
+            }
+        }
 
         public PixelSpace() { }
 
@@ -51,6 +99,19 @@ namespace ThreeByte.Media
         public override string ToString() {
             return ToXml().ToString();
         }
+
+        public static PixelSpace GetContainingSpace(PixelSpace a, PixelSpace b) {
+            PixelSpace container = new PixelSpace(a);
+
+            container.X = Math.Min(a.X, b.X);
+            container.Y = Math.Min(a.Y, b.Y);
+
+            container.W = Math.Max(a.X + a.W, b.X + b.W) - container.X;
+            container.H = Math.Max(a.Y + a.H, b.Y + b.H) - container.Y;
+
+            return container;
+        }
+
     }
 
     public class PixelScaler
