@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="UpdateBuildNumber" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\ExtensionPack\4.0\MSBuild.ExtensionPack.tasks" />
+  <ItemGroup>
+    <AssemblyInfoFiles Include="$(MSBuildProjectDirectory)\Properties\AssemblyInfo.cs" >
+      <Attributes>Normal</Attributes>
+    </AssemblyInfoFiles>
+  </ItemGroup>
+  <Target Name="UpdateBuildNumber">
+    <Message Text="Updating with Build Number: $(BUILD_NUMBER)" />
+    <File TaskAction="SetAttributes" Files="@(AssemblyInfoFiles)" />
+    <File TaskAction="Replace" Files="@(AssemblyInfoFiles)" RegexPattern="AssemblyVersion\(&quot;.*&quot;\)\]" Replacement="AssemblyVersion(&quot;$(BUILD_NUMBER)&quot;)]" />
+    <File TaskAction="Replace" Files="@(AssemblyInfoFiles)" RegexPattern="AssemblyFileVersion\(&quot;.*&quot;\)\]" Replacement="AssemblyFileVersion(&quot;$(BUILD_NUMBER)&quot;)]" />    
+  </Target>
+</Project>
