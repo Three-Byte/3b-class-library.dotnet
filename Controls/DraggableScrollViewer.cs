@@ -17,6 +17,39 @@ namespace ThreeByte.Controls
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(DraggableScrollViewer));
 
+        public static readonly DependencyProperty OffsetXProperty = DependencyProperty.Register("OffsetX",
+            typeof(int), typeof(DraggableScrollViewer), new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OffsetXChanged));
+
+        public int OffsetX {
+            get {
+                return (int)GetValue(OffsetXProperty);
+            }
+            set {
+                SetValue(OffsetXProperty, value);
+            }
+        }
+
+        public static void OffsetXChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e) {
+            DraggableScrollViewer viewer = (DraggableScrollViewer)obj;
+            viewer.ScrollToHorizontalOffset((int)(e.NewValue));
+        }
+
+        public static readonly DependencyProperty OffsetYProperty = DependencyProperty.Register("OffsetY",
+            typeof(int), typeof(DraggableScrollViewer), new FrameworkPropertyMetadata(0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault, OffsetYChanged));
+
+        public int OffsetY {
+            get {
+                return (int)GetValue(OffsetYProperty);
+            }
+            set {
+                SetValue(OffsetYProperty, value);
+            }
+        }
+
+        public static void OffsetYChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e) {
+            DraggableScrollViewer viewer = (DraggableScrollViewer)obj;
+            viewer.ScrollToVerticalOffset((int)(e.NewValue));
+        }
 
         public static readonly DependencyProperty IsLockedToViewerProperty = DependencyProperty.RegisterAttached(
                                                                         "IsLockedToViewer",
@@ -44,6 +77,8 @@ namespace ThreeByte.Controls
         }
 
 
+
+
         public DraggableScrollViewer() {
 
             this.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
@@ -64,7 +99,7 @@ namespace ThreeByte.Controls
                 return;
             }
             mouseDownPoint = e.GetPosition(this);
-            scrollStartOffset.X = this.HorizontalOffset;
+            scrollStartOffset.X = this.OffsetX;
             scrollStartOffset.Y = this.VerticalOffset;
 
             if((this.ExtentWidth > this.ViewportWidth) || (this.ExtentHeight > this.ViewportHeight)) {
@@ -86,9 +121,12 @@ namespace ThreeByte.Controls
                 Point delta = new Point(mouseDownPoint.X - currentMousePosition.X,
                                         mouseDownPoint.Y - currentMousePosition.Y);
 
-                this.ScrollToHorizontalOffset(scrollStartOffset.X + delta.X);
-                this.ScrollToVerticalOffset(scrollStartOffset.Y + delta.Y);
-                log.DebugFormat("Scroller Delta {0} / {1}", delta.X, delta.Y);
+                OffsetX = (int)(Math.Round(scrollStartOffset.X + delta.X));
+                OffsetY = (int)(Math.Round(scrollStartOffset.Y + delta.Y));
+
+                //this.ScrollToHorizontalOffset(scrollStartOffset.X + delta.X);
+                //this.ScrollToVerticalOffset(scrollStartOffset.Y + delta.Y);
+                //log.DebugFormat("Scroller Delta {0} / {1}", delta.X, delta.Y);
             } 
 
             //Console.WriteLine("Scroller Extents {0} / {1}", this.ExtentHeight, this.ExtentWidth);
