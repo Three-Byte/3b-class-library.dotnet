@@ -21,13 +21,26 @@ namespace ThreeByte.Controls
         private bool _mouseIsDown;
         private bool _isDragging;
 
-        public FrameworkElement SelectedItem;
+        private FrameworkElement _selectedItem;
+        public FrameworkElement SelectedItem {
+            get {
+                return _selectedItem;
+            }
+            private set {
+                _selectedItem = value;
+                if(SelectedItemChanged != null) {
+                    SelectedItemChanged(this, new SelectedItemChangedEventArgs(_selectedItem));
+                }
+            }
+        }
+
+        public event EventHandler<SelectedItemChangedEventArgs> SelectedItemChanged;
 
         //Drag testing
         private Point _mouseStartPoint;
         private Point _elementStartPosition;
 
-        public event EventHandler<ItemDeleteEventArgs> ItemDeleted;
+        public event EventHandler<ItemDeletedEventArgs> ItemDeleted;
 
         private Boundary _bounds;
         public Boundary Bounds {
@@ -92,7 +105,7 @@ namespace ThreeByte.Controls
                     Deselect();
                     Children.Remove(itemToDelete);
                     if(ItemDeleted != null) {
-                        ItemDeleted(this, new ItemDeleteEventArgs(itemToDelete));
+                        ItemDeleted(this, new ItemDeletedEventArgs(itemToDelete));
                     }
                 }
             } else if(e.Key == Key.Escape) {
@@ -115,8 +128,8 @@ namespace ThreeByte.Controls
                     Point newPosition = Mouse.GetPosition(this);
                     Boundary bounds = Boundary.FromFrameworkElement(this);
 
-                    double newTop = Math.Max(0, Math.Min(ActualHeight, newPosition.Y - (_mouseStartPoint.Y - _elementStartPosition.Y)));
-                    double newLeft = Math.Max(0, Math.Min(ActualWidth, newPosition.X - (_mouseStartPoint.X - _elementStartPosition.X)));
+                    double newTop = Math.Max(Bounds.MinY, Math.Min(Bounds.MaxY, newPosition.Y - (_mouseStartPoint.Y - _elementStartPosition.Y)));
+                    double newLeft = Math.Max(Bounds.MinX, Math.Min(Bounds.MaxX, newPosition.X - (_mouseStartPoint.X - _elementStartPosition.X)));
                     log.DebugFormat("Drag move: Left: {0} Top: {1}", newLeft, newTop);
                     newTop = ClampTop(SelectedItem, bounds, newTop);
                     newLeft = ClampLeft(SelectedItem, bounds, newLeft);
@@ -139,7 +152,7 @@ namespace ThreeByte.Controls
         }
 
         private void Deselect() {
-            if(SelectedItem != null) {
+            if((SelectedItem != null) && (adornerLayer.GetAdorners(SelectedItem) != null)) {
                 foreach(Adorner a in adornerLayer.GetAdorners(SelectedItem)) {
                     adornerLayer.Remove(a);
                 }
@@ -229,11 +242,20 @@ namespace ThreeByte.Controls
         public static readonly Boundary DefaultScreen = new Boundary() { MinX = 0, MaxX = 768, MinY = 0, MaxY = 1004 };
     }
 
-    public class ItemDeleteEventArgs : EventArgs
+    public class ItemDeletedEventArgs : EventArgs
     {
         public FrameworkElement Item;
 
-        public ItemDeleteEventArgs(FrameworkElement item) {
+        public ItemDeletedEventArgs(FrameworkElement item) {
+            Item = item;
+        }
+    }
+
+    public class SelectedItemChangedEventArgs : EventArgs
+    {
+        public FrameworkElement Item;
+
+        public SelectedItemChangedEventArgs(FrameworkElement item) {
             Item = item;
         }
     }
