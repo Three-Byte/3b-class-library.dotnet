@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\DesignerCanvas.cs" />
+    <Compile Include="Controls\DesignerItemsControl.cs" />
     <Compile Include="Controls\DraggableScrollViewer.cs" />
     <Compile Include="Controls\ListViewItemStyleSelector.cs" />
     <Compile Include="Controls\ResizingAdorner.cs" />
@@ -166,6 +167,12 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Themes\generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

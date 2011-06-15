@@ -112,6 +112,46 @@ namespace ThreeByte.Media
             return container;
         }
 
+        public static double ClampTop(PixelSpace pos, Boundary boundary, double top) {
+            if(top <= boundary.MinY) {
+                return boundary.MinY;
+            } else if(top + pos.H >= boundary.MaxY) {
+                return boundary.MaxY - pos.H;
+            }
+            //otherwise
+            return top;
+        }
+
+        public static double ClampLeft(PixelSpace pos, Boundary boundary, double left) {
+            if(left <= boundary.MinX) {
+                return boundary.MinX;
+            } else if(left + pos.W >= boundary.MaxX) {
+                return boundary.MaxX - pos.W;
+            }
+            //otherwise
+            return left;
+        }
+
+        public static double ClampWidth(PixelSpace pos, Boundary boundary, double width) {
+            if(width <= 0) {
+                return 0;
+            } else if(width + pos.X >= boundary.MaxX) {
+                return boundary.MaxX - pos.X;
+            }
+            //otherwise
+            return width;
+        }
+
+        public static double ClampHeight(PixelSpace pos, Boundary boundary, double height) {
+            if(height <= 0) {
+                return 0;
+            } else if(height + pos.Y >= boundary.MaxY) {
+                return boundary.MaxY - pos.Y;
+            }
+            //otherwise
+            return height;
+        }
+
     }
 
     public class PixelScaler

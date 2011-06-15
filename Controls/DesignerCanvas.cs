@@ -244,9 +244,9 @@ namespace ThreeByte.Controls
 
     public class ItemDeletedEventArgs : EventArgs
     {
-        public FrameworkElement Item;
+        public object Item;
 
-        public ItemDeletedEventArgs(FrameworkElement item) {
+        public ItemDeletedEventArgs(object item) {
             Item = item;
         }
     }
