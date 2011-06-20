@@ -20,7 +20,9 @@ namespace ThreeByte.Controls
 
             DefaultStyleKey = typeof(DesignerItemsControl);
 
-            this.KeyDown += new KeyEventHandler(DesignerItemsControl_KeyDown);
+            this.PreviewKeyDown += new KeyEventHandler(DesignerItemsControl_KeyDown);
+            SelectionMode = System.Windows.Controls.SelectionMode.Extended;
+
             //FocusManager.SetIsFocusScope(this, true);
             //this.Focusable = true;
             //this.PreviewMouseLeftButtonDown += new MouseButtonEventHandler(DesignerItemsControl_PreviewMouseLeftButtonDown);
@@ -49,7 +51,11 @@ namespace ThreeByte.Controls
         }
 
         private void Deselect() {
-            SelectedItems.Clear();
+            try {
+                SelectedItems.Clear();
+            } catch(Exception ex) {
+                log.Warn("Cannot deselect items", ex);
+            }
         }
 
         //private AdornerLayer adornerLayer;

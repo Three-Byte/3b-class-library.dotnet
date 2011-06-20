@@ -93,8 +93,9 @@ namespace ThreeByte.Controls
         private Point scrollStartOffset;
 
         void DraggableScrollViewer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            
-            if((e.OriginalSource != this) && !GetIsLockedToViewer(e.Source as FrameworkElement)) {
+            log.DebugFormat("Source: {0} OriginalSource: {1}", e.Source, e.OriginalSource);
+
+            if((e.OriginalSource != this) && !GetIsLockedToViewer(e.OriginalSource as FrameworkElement)) {
                 log.Debug("Mouse not clicked on the scroll viewer");
                 return;
             }
