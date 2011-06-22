@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B6B72993-5803-48D3-AA86-5AB0F7BD8635}</ProjectGuid>
+    <ProjectGuid>{BD7273E3-CF02-4A3E-983B-4DDE884D07B6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ThreeByte</RootNamespace>
@@ -98,9 +98,11 @@
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="Logging\LogUtil.cs" />
     <Compile Include="Logging\RecentEventAppender.cs" />
+    <Compile Include="Media\Boundary.cs" />
     <Compile Include="Media\ElapsedTimer.cs" />
     <Compile Include="Media\ImageUtil.cs" />
     <Compile Include="Media\PixelSpace.cs" />
+    <Compile Include="Media\TemplateRegion.cs" />
     <Compile Include="Network\AsyncNetworkLink.cs" />
     <Compile Include="Network\BroadcastListener.cs" />
     <Compile Include="Network\NetworkServerManager.cs" />
