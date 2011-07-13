@@ -108,6 +108,7 @@
     <Compile Include="Converters\BooleanOppositeConverter.cs" />
     <Compile Include="Converters\ByteStreamToImageConverter.cs" />
     <Compile Include="Converters\ByteDoubleConverter.cs" />
+    <Compile Include="Converters\FrozenImageConverter.cs" />
     <Compile Include="Converters\FillToStretchConverter.cs" />
     <Compile Include="Converters\IsNullConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
