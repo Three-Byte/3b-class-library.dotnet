@@ -16,7 +16,7 @@ namespace ThreeByte.Converters
             //Take a URI and 
 
             string path = System.Convert.ToString(value);
-            if(path == null) {
+            if(string.IsNullOrEmpty(path)) {
                 return null;
             }
 
