@@ -163,7 +163,7 @@ namespace ThreeByte.Network
                             _footerPos++;
                         } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]) {
 
-                            string newMessage = Encoding.ASCII.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
+                            string newMessage = Encoding.UTF8.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
                             if(newMessage.Trim() != string.Empty) {
                                 //log.Debug("Adding Message: " + newMessage.Substring(0, Math.Min(30, newMessage.Length)));
                                 lock(_incomingData) {
@@ -216,7 +216,7 @@ namespace ThreeByte.Network
             byte[] messageBytes = new byte[message.Length + header.Length + footer.Length];
 
             header.CopyTo(messageBytes, 0);
-            Encoding.ASCII.GetBytes(message, 0, message.Length, messageBytes, header.Length);
+            Encoding.UTF8.GetBytes(message, 0, message.Length, messageBytes, header.Length);
             footer.CopyTo(messageBytes, message.Length + header.Length);
 
             //log.Info("Debug: " + string.Format("{0} {1} {2}\r", message.Length, header.Length, messageBytes.ToString()));
