@@ -158,10 +158,12 @@ namespace ThreeByte.Network
                             _headerPos++;
                         } else if(_headerPos == header.Length - 1 && buffer[i] == header[_headerPos]) {
                             _headerPos = 0;
+                            _footerPos = 0;
                             _incomingBuffer.Position = 0; //Reset to the beginning
                         } else if(_footerPos < footer.Length - 1 && buffer[i] == footer[_footerPos]) {
                             _footerPos++;
                         } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]) {
+                            _footerPos = 0;  //Reset Footer
 
                             string newMessage = Encoding.UTF8.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
                             if(newMessage.Trim() != string.Empty) {
