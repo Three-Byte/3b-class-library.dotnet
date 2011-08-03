@@ -313,6 +313,11 @@ namespace ThreeByte.Network
             lock(_clientLock) {
                 try {
                     bytesRead = _networkStream.EndRead(asyncResult);
+                    //If the remote host shuts down the Socket connection and all available data has been received, the EndRead method completes immediately and returns zero bytes.
+                    if(bytesRead == 0) {
+                        SafeClose();
+                        SafeConnect();
+                    }
                     if(bytesRead > 0) {
                         lock(_incomingData) {
                             byte[] truncatedBuffer = new byte[bytesRead];
