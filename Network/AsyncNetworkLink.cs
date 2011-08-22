@@ -44,7 +44,7 @@ namespace ThreeByte.Network
 
         private bool _enabled;
         /// <summary>
-        /// Gets or sets a value indicating where messages should be propogated to the network or not
+        /// Gets or sets a value indicating whether messages should be propogated to the network or not
         /// </summary>
         public bool Enabled {
             get {
@@ -166,6 +166,7 @@ namespace ThreeByte.Network
                     _incomingData.Clear();
                 }
             }
+            IsConnected = false;
         }
 
 
@@ -213,12 +214,19 @@ namespace ThreeByte.Network
             lock(_clientLock) {
                 try {                 
                     _networkStream = null;
-                    _tcpClient.EndConnect(asyncResult);
-                    IsConnected = _tcpClient.Connected;
-                    _networkStream = _tcpClient.GetStream();
+                    if(_tcpClient != null) {
+                        _tcpClient.EndConnect(asyncResult);
+                        IsConnected = _tcpClient.Connected;
+                        _networkStream = _tcpClient.GetStream();
 
-                    Error = null;
-                    IsConnected = true;
+                        Error = null;
+                        IsConnected = true;
+                    } else {
+                        IsConnected = false;
+                    }
+                    if(!Enabled) {
+                        SafeClose();
+                    }
                 }catch(Exception ex){
                     log.Error("Connection Error", ex);
                     Error = ex;
@@ -227,10 +235,12 @@ namespace ThreeByte.Network
                 if(_connectResult == asyncResult) {
                     log.Debug("Clearing Connect Result");
                     _connectResult = null;
-                    if(!IsConnected) {
-                        Timer timer = new Timer(SafeConnect, DateTime.Now, TimeSpan.FromSeconds(3), TimeSpan.FromMilliseconds(-1));
-                    } else {
-                        ReceiveData();//Begin listening for data
+                    if(Enabled) {
+                        if(!IsConnected) {
+                            Timer timer = new Timer(SafeConnect, DateTime.Now, TimeSpan.FromSeconds(3), TimeSpan.FromMilliseconds(-1));
+                        } else {
+                            ReceiveData();//Begin listening for data
+                        }
                     }
                 }
             }
@@ -312,7 +322,9 @@ namespace ThreeByte.Network
 
             lock(_clientLock) {
                 try {
-                    bytesRead = _networkStream.EndRead(asyncResult);
+                    if(_networkStream != null) {
+                        bytesRead = _networkStream.EndRead(asyncResult);
+                    }
                     //If the remote host shuts down the Socket connection and all available data has been received, the EndRead method completes immediately and returns zero bytes.
                     if(bytesRead == 0) {
                         SafeClose();
@@ -330,10 +342,10 @@ namespace ThreeByte.Network
                                 _incomingData.RemoveAt(_incomingData.Count - 1);
                             }
                         }
+                        Error = null;
+                        IsConnected = true;
                     }
 
-                    Error = null;
-                    IsConnected = true;
                 } catch(Exception ex) {
                     log.Error("Error Reading from stream", ex);
                     Error = ex;

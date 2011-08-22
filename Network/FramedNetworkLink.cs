@@ -57,7 +57,7 @@ namespace ThreeByte.Network
         }
 
         /// <summary>
-        /// Gets or sets a value indicating where messages should be propogated to the network or not
+        /// Gets or sets a value indicating whether messages should be propogated to the network or not
         /// </summary>
         public bool Enabled {
             get { return _networkLink.Enabled; }
