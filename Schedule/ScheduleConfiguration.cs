@@ -6,12 +6,15 @@ using System.Windows;
 using System.Xml.Linq;
 using System.IO;
 using log4net;
+using System.Xml;
 
 namespace ThreeByte.Schedule
 {
     public class ScheduleConfiguration : DependencyObject
     {
         private readonly ILog log = LogManager.GetLogger(typeof(ScheduleConfiguration));
+
+        public enum SystemState { SystemOn, SystemOff, StartingUp };
 
         #region Dependency Properties
         public static readonly DependencyProperty StartupTimeProperty =
@@ -125,8 +128,8 @@ namespace ThreeByte.Schedule
         public void Save() {
 
             XElement scheduleNode = new XElement("Schedule");
-            scheduleNode.Add(new XElement("StartupTime", StartupTime));
-            scheduleNode.Add(new XElement("ShutdownTime", ShutdownTime));
+            scheduleNode.Add(new XElement("StartupTime", StartupTime.ToString()));
+            scheduleNode.Add(new XElement("ShutdownTime", ShutdownTime.ToString()));
 
             scheduleNode.Add(new XElement("SundayEnabled", SundayEnabled));
             scheduleNode.Add(new XElement("MondayEnabled", MondayEnabled));
