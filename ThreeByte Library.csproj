@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\AnimatedStackPanel.cs" />
+    <Compile Include="Controls\VirtualizedAnimatedStackPanel.cs" />
     <Compile Include="Controls\DesignerCanvas.cs" />
     <Compile Include="Controls\DesignerItemsControl.cs" />
     <Compile Include="Controls\DraggableScrollViewer.cs" />
