@@ -8,7 +8,7 @@ namespace ThreeByte.Converters
 {
     public class IntToAlphaConverter : IValueConverter
     {
-        public char _baseChar = 'A';
+        private char _baseChar = 'A';
         public char BaseChar {
             get {
                 return _baseChar;

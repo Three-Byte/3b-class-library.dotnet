@@ -111,6 +111,7 @@
     <Compile Include="Converters\BooleanOppositeConverter.cs" />
     <Compile Include="Converters\ByteStreamToImageConverter.cs" />
     <Compile Include="Converters\ByteDoubleConverter.cs" />
+    <Compile Include="Converters\IntToColorConverter.cs" />
     <Compile Include="Converters\IsNullOrWhitespaceConverter.cs" />
     <Compile Include="Converters\IntToAlphaConverter.cs" />
     <Compile Include="Converters\FrozenImageConverter.cs" />
