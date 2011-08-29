@@ -94,12 +94,12 @@ namespace ThreeByte.Network
         private MemoryStream _incomingBuffer;
 
 
-        public FramedNetworkLink(string address, int port) {
+        public FramedNetworkLink(string address, int port, bool enabled = true) {
             
             _incomingBuffer = new MemoryStream(2048);
             _incomingData = new List<string>();
 
-            _networkLink = new AsyncNetworkLink(address, port);
+            _networkLink = new AsyncNetworkLink(address, port, enabled);
             _networkLink.DataReceived += new EventHandler(_networkLink_DataReceived);
             _networkLink.PropertyChanged += new PropertyChangedEventHandler(_networkLink_PropertyChanged);
             

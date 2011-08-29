@@ -52,7 +52,7 @@ namespace ThreeByte.Network
             }
             set {
                 _enabled = value;
-                if(!Enabled) {
+                if(!_enabled) {
                     SafeClose();
                 } else if(!IsConnected) {
                     SafeConnect();
@@ -106,13 +106,13 @@ namespace ThreeByte.Network
         private IAsyncResult _writeResult = null;
 
 
-        public AsyncNetworkLink(string address, int port) {
+        public AsyncNetworkLink(string address, int port, bool enabled = true) {
             Address = address;
             Port = port;
 
             _incomingData = new List<byte[]>();
 
-            Enabled = true;  //Default is true
+            Enabled = enabled;  //Default is true
         }
 
         
