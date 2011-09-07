@@ -55,7 +55,7 @@ namespace ThreeByte.Media
             surface.LayoutTransform = xform;
         }
 
-        public static BitmapSource SaveToBitmapSource(FrameworkElement surface, Size size = default(Size)) {
+        public static BitmapSource SaveToBitmapSource(FrameworkElement surface, Size size = default(Size), bool forceRefresh = false) {
             Transform xform = surface.LayoutTransform;
             surface.LayoutTransform = null;
 
@@ -65,9 +65,11 @@ namespace ThreeByte.Media
             //int width = (int)surface.Width;
             //int height = (int)surface.Height;
 
-            //Size sSize = new Size(width, height);
-            //surface.Measure(size);
-            //surface.Arrange(new Rect(size));
+            if(forceRefresh) {
+                surface.Measure(size);
+                surface.Arrange(new Rect(size));
+                surface.UpdateLayout();
+            }
 
             RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)(size.Width), (int)(size.Height), 96, 96, PixelFormats.Pbgra32);
             DrawingVisual dv = new DrawingVisual();
