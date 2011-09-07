@@ -26,9 +26,9 @@ namespace ThreeByte.Media
             //int height = (int)surface.Height;
 
             //Size sSize = new Size(width, height);
-            //surface.Measure(size);
-            //surface.Arrange(new Rect(size));
-            //surface.UpdateLayout();
+            surface.Measure(size);
+            surface.Arrange(new Rect(size));
+            surface.UpdateLayout();
 
             //RenderTargetBitmap renderBitmap = new RenderTargetBitmap((int)(size.Width), (int)(size.Height), 96, 96, PixelFormats.Pbgra32);
             //renderBitmap.Render(surface);
