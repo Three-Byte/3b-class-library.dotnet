@@ -7,6 +7,8 @@ using System.Net;
 using log4net;
 using log4net.Appender;
 using log4net.Repository.Hierarchy;
+using System.IO;
+using System.IO.Compression;
 
 namespace ThreeByte.Logging
 {
@@ -63,6 +65,42 @@ namespace ThreeByte.Logging
             return eventString;
 
         }
+
+        public static string ZipLogFiles() {
+
+            try {
+                Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
+
+                string logFileName = null;
+                foreach(IAppender app in hierarchy.Root.Appenders) {
+                    if(app is RollingFileAppender) {
+                        RollingFileAppender fileAppender = (RollingFileAppender)app;
+                        string logDir = Path.GetDirectoryName(fileAppender.File);
+                        logFileName = fileAppender.File;
+                        break;
+                    }
+                }
+
+                string zipFilePath = Path.Combine(Path.GetTempPath(), "Log.gz");
+                string tempLog = Path.GetTempFileName();
+                File.Copy(logFileName, tempLog, true);
+                //Construct Zip Archive
+                using(FileStream inFile = new FileStream(tempLog, FileMode.Open)) {
+                    using(FileStream outFile = File.Create(zipFilePath)) {
+                        using(GZipStream zipStream = new GZipStream(outFile, CompressionMode.Compress)) {
+                            inFile.CopyTo(zipStream);
+                        }
+                    }
+                }
+
+                return zipFilePath;
+            } catch(Exception ex) {
+                Console.WriteLine(ex);
+                return null;
+            }
+        }
+
+
 
         public static void CreateEventLog(string appName, string logName) {
             System.Diagnostics.EventLog.CreateEventSource(appName, logName);
