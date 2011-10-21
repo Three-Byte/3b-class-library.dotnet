@@ -66,6 +66,7 @@ namespace ThreeByte.Logging
 
         }
 
+
         public static string ZipLogFiles() {
 
             try {
@@ -88,7 +89,13 @@ namespace ThreeByte.Logging
                 using(FileStream inFile = new FileStream(tempLog, FileMode.Open)) {
                     using(FileStream outFile = File.Create(zipFilePath)) {
                         using(GZipStream zipStream = new GZipStream(outFile, CompressionMode.Compress)) {
-                            inFile.CopyTo(zipStream);
+                            byte[] buf = new byte[4096];
+                            int bytesRead = inFile.Read(buf, 0, buf.Length);
+                            while(bytesRead > 0) {
+                                zipStream.Write(buf, 0, bytesRead);
+                                bytesRead = inFile.Read(buf, 0, buf.Length);
+                            }
+                            //inFile.CopyTo(zipStream);
                         }
                     }
                 }
