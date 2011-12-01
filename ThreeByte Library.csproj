@@ -128,6 +128,11 @@
     <Compile Include="Converters\ListViewItemStyleSelector.cs" />
     <Compile Include="Converters\NullableBooleanConverter.cs" />
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
+    <Compile Include="DMX\DMXControl.cs" />
+    <Compile Include="DMX\LightingChannels.cs" />
+    <Compile Include="DMX\LightingFader.xaml.cs">
+      <DependentUpon>LightingFader.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Logging\LogUtil.cs" />
     <Compile Include="Logging\RecentEventAppender.cs" />
     <Compile Include="Media\Boundary.cs" />
@@ -179,6 +184,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="DMX\LightingFader.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Themes\generic.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
