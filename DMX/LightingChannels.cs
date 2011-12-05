@@ -41,9 +41,17 @@ namespace ThreeByte.DMX
             CHANNEL_DIMMER_MAPPING[15] = 22;
         }
 
+        private readonly Dictionary<int, int> _dimmerMap;
 
-        public LightingChannels(int channelCount, DMXControl dmxController){
+        public LightingChannels(int channelCount, DMXControl dmxController) : this(channelCount, null, dmxController){
+            
+        }
+
+        public LightingChannels(int channelCount, Dictionary<int, int> dimmerMap, DMXControl dmxController) {
+
             _channels = new byte[channelCount];
+
+            _dimmerMap = dimmerMap;
 
             _dmxController = dmxController;
             _dmxController.Init();
@@ -54,7 +62,6 @@ namespace ThreeByte.DMX
             _autosaveTimer.Interval = 10000;
             _autosaveTimer.AutoReset = false;
             _autosaveTimer.Elapsed += new ElapsedEventHandler(_autosaveTimer_Elapsed);
-            
         }
 
         private bool _isBlackout = false;
@@ -126,7 +133,11 @@ namespace ThreeByte.DMX
 
         }
         private void UpdateChannel(int i) {
-            _dmxController[i + 1] = _channels[i];
+            if(_dimmerMap != null) {
+                _dmxController[_dimmerMap[i]] = _channels[i];
+            } else {
+                _dmxController[i + 1] = _channels[i];
+            }
             //_dmxController[CHANNEL_DIMMER_MAPPING[i]] = _channels[i];
         }
 

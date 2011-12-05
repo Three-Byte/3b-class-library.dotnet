@@ -23,7 +23,6 @@ namespace ThreeByte.DMX
         private const byte DMX_HEADER_LENGTH = 4;
         private const int DMX_PACKET_SIZE = 512;
 
-
         private SerialPort _serialPort;
         private Stream _serialPortStream;
         private object _serialLock = new object();
