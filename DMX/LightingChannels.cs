@@ -43,7 +43,7 @@ namespace ThreeByte.DMX
 
         private readonly Dictionary<int, int> _dimmerMap;
 
-        public LightingChannels(int channelCount, DMXControl dmxController) : this(channelCount, null, dmxController){
+        public LightingChannels(int channelCount, DMXControl dmxController) : this(channelCount, null, dmxController) {
             
         }
 

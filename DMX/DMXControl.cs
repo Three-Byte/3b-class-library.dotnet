@@ -27,6 +27,7 @@ namespace ThreeByte.DMX
         private Stream _serialPortStream;
         private object _serialLock = new object();
         private byte[] _dmxValues;
+
         private readonly string _comPort;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -87,20 +88,36 @@ namespace ThreeByte.DMX
 
         public byte this[int i] {
             get {
-                return _dmxValues[i];
+                lock(_dmxValues) {
+                    return _dmxValues[i];
+                }
             }
             set {
-                _dmxValues[i] = value;
-                SendDMXData(_dmxValues);
+                lock(_dmxValues) {
+                    _dmxValues[i] = value;
+                    SendDMXData(_dmxValues);
+                }
             }
         }
 
         public void SetAll(byte val) {
-            for(int i = 1; i < 512; i++) {
-                _dmxValues[i] = val;
+            lock(_dmxValues) {
+                for(int i = 1; i < 512; i++) {
+                    _dmxValues[i] = val;
+                }
+                SendDMXData(_dmxValues);
             }
-            SendDMXData(_dmxValues);
         }
+
+        public void SetValues(Dictionary<int, byte> values) {
+            lock(_dmxValues) {
+                foreach(int i in values.Keys) {
+                    _dmxValues[i] = values[i];
+                }
+                SendDMXData(_dmxValues);
+            }
+        }
+
         private bool _wasOpen = false;
         private void SendDMXData(byte[] data) {
             if(data.Length > DMX_PACKET_SIZE){
