@@ -86,6 +86,17 @@ namespace ThreeByte.DMX
             }
         }
 
+        private bool _enabled = true;  //Default
+        public bool Enabled {
+            get {
+                return _enabled;
+            }
+            set {
+                _enabled = value;
+                NotifyPropertyChanged("Enabled");
+            }
+        }
+
         public byte this[int i] {
             get {
                 lock(_dmxValues) {
@@ -120,6 +131,10 @@ namespace ThreeByte.DMX
 
         private bool _wasOpen = false;
         private void SendDMXData(byte[] data) {
+            if(!Enabled) {
+                return;
+            }
+
             if(data.Length > DMX_PACKET_SIZE){
                 throw new ArgumentOutOfRangeException("DMX data is limited to 512 bytes");
             }
