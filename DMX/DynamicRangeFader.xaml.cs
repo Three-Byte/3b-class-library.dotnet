@@ -37,14 +37,6 @@ namespace ThreeByte.DMX
         private double _maxValue = 65535;
         private double _minValue = 0;
         
-        //public event PropertyChangedEventHandler PropertyChanged;
-
-        //private void NotifyPropertyChanged(string propertyName) {
-        //    if(PropertyChanged != null) {
-        //        PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-        //    }
-        //}
-
         private bool _showEdit = true;
         public bool ShowEdit {
             get {
@@ -52,7 +44,6 @@ namespace ThreeByte.DMX
             }
             set {
                 _showEdit = value;
-                //NotifyPropertyChanged("ShowEdit");
                 if(!_showEdit) {
                     ValueTextBox.Visibility = Visibility.Hidden;
                 }
@@ -148,7 +139,6 @@ namespace ThreeByte.DMX
             }
             set {
                 SetValue(TitleProperty, value);
-                //NotifyPropertyChanged("Title");
             }
         }
 

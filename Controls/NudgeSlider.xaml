@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="ThreeByte.Controls.NudgeSlider"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:conv="clr-namespace:ThreeByte.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" x:Name="ThisControl">
+    <Grid DataContext="{Binding ElementName=ThisControl}">
+        <Grid.Resources>
+            <conv:MultiplyConverter x:Key="NegativeConverter" Factor="-1.0" />
+            <conv:MultiplyConverter x:Key="TickConverter" Factor=".25" />
+        </Grid.Resources>
+        <Slider Name="Slider" Orientation="Vertical" TickPlacement="Both" HorizontalAlignment="Center" Value="0"
+                PreviewMouseLeftButtonDown="SliderMouseDown" PreviewMouseLeftButtonUp="SliderMouseUp" MouseLeave="SliderMouseLeave"
+                Maximum="{Binding Magnitude}" Minimum="{Binding Magnitude, Converter={StaticResource NegativeConverter}}"
+                TickFrequency="{Binding Magnitude, Converter={StaticResource TickConverter}}"/>
+    </Grid>
+</UserControl>
