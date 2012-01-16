@@ -15,7 +15,12 @@ namespace ThreeByte.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             Binary b = value as Binary;
             if(b == null) {
-                return null;
+                //See if it is a byte[] instead
+                byte[] byteArray = value as byte[];
+                if(byteArray == null) {
+                    return null;
+                }
+                b = new Binary(byteArray);
             }
 
             BitmapImage newBitmap = new BitmapImage();
