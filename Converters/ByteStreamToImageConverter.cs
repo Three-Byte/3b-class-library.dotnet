@@ -26,9 +26,11 @@ namespace ThreeByte.Converters
             BitmapImage newBitmap = new BitmapImage();
             newBitmap.BeginInit();
             newBitmap.CacheOption = BitmapCacheOption.OnLoad;
-            MemoryStream newMemoryStream = new MemoryStream(b.ToArray());
-            newBitmap.StreamSource = newMemoryStream;
-            newBitmap.EndInit(); 
+            using(MemoryStream newMemoryStream = new MemoryStream(b.ToArray())) {
+                newBitmap.StreamSource = newMemoryStream;
+                newBitmap.EndInit();
+                newBitmap.Freeze();
+            }
             return newBitmap;
         }
 
