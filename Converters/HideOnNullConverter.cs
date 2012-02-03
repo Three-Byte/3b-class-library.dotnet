@@ -12,10 +12,16 @@ namespace ThreeByte.Converters
 {
     public class HideOnNullConverter : IValueConverter
     {
-        
+
+        public Visibility HideState { get; set; }
+
+        public HideOnNullConverter() {
+            HideState = Visibility.Hidden;
+        }
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             if(value == null) {
-                return Visibility.Hidden;
+                return HideState;
             }
 
             return Visibility.Visible;            

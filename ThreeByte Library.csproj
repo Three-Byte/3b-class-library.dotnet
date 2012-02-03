@@ -136,6 +136,8 @@
     <Compile Include="Converters\NullableBooleanConverter.cs" />
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="DMX\ChannelSplitter.cs" />
+    <Compile Include="DMX\StrobeController.cs" />
+    <Compile Include="DMX\StrobeFilter.cs" />
     <Compile Include="DMX\DynamicRangeFader.xaml.cs">
       <DependentUpon>DynamicRangeFader.xaml</DependentUpon>
     </Compile>
