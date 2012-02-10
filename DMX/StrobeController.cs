@@ -34,7 +34,12 @@ namespace ThreeByte.DMX
                 return _phaseShift;
             }
             set {
-                _phaseShift = value;
+                double freq = _frequency;
+                if(freq > 0.0) {
+                    _phaseShift = (int)Math.Round(Math.Min(value, (1000.0 / (_frequency * 2.0))));
+                } else {
+                    _phaseShift = 0;
+                }
                 NotifyPropertyChanged("PhaseShift");
             }
         }
@@ -84,7 +89,7 @@ namespace ThreeByte.DMX
 
         public void SetNextPulse(int offsetMillis) {
             SyncPulseTime = Watch.ElapsedMilliseconds + offsetMillis;
-            Console.WriteLine("SyncPulse Time: {0}", SyncPulseTime);
+            //Console.WriteLine("SyncPulse Time: {0}", SyncPulseTime);
         }
 
 
@@ -93,24 +98,39 @@ namespace ThreeByte.DMX
 
             while(true) {
 
-                if(SyncPulseTime > 0){
-                    long offset = SyncPulseTime - NextPulseTime;
-                    SyncOffset = (int)(offset);
-                    if(offset < 0 && SyncNudge) {
-                        NextPulseTime = NextPulseTime - 10;  //Nudge the pulse back to where it should be
+                double freq;
+                lock(FrequencyLock) {
+                    freq = Frequency;
+                }
+
+                if((SyncPulseTime > 0) && (freq != 0.0)){
+                    int interval = (int)Math.Round(1000.0 / (freq * 2.0));
+                    long absOffset = (SyncPulseTime - NextPulseTime);
+                    long relOffset = (absOffset + interval) % interval;
+                    long realOffset = 0;
+                    if(Math.Abs(absOffset) < relOffset) {
+                        realOffset = absOffset;
+                    } else {
+                        realOffset = relOffset;
+                    }
+                    SyncOffset = (int)(absOffset);
+                    if(Math.Abs(realOffset) > 10 && SyncNudge) {
+                        if(realOffset > 0) {
+                            Console.WriteLine("push -->: {0}/{1}/{2}", absOffset, relOffset, realOffset);
+                            NextPulseTime = NextPulseTime + 10;  //Nudge the pulse back to where it should be (10ms)
+                        } else {
+                            Console.WriteLine("push <--: {0}/{1}/{2}", absOffset, relOffset, realOffset);
+                            NextPulseTime = NextPulseTime - 10;  //Nudge the pulse back to where it should be (10ms)
+                        }
                         //Only push the pulse time sooner
                     }
-                    Console.WriteLine("Sync Pulse Offset: {0}", offset);
+                    //Console.WriteLine("Sync Pulse Offset: {0}", offset);
                     SyncPulseTime = 0;
                 }
 
                 if((Watch.ElapsedMilliseconds > NextPulseTime + PhaseShift)
                     && (NextPulseTime > -1)) {
 
-                    double freq;
-                    lock(FrequencyLock) {
-                        freq = Frequency;
-                    }
                     if(freq != 0.0) {
                         int interval = (int)Math.Round(1000.0 / (freq * 2.0));
                         NextPulseTime = Watch.ElapsedMilliseconds + interval - PhaseShift;//Frequency calculation
