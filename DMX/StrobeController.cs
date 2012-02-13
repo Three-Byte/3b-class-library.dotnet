@@ -102,9 +102,10 @@ namespace ThreeByte.DMX
                 lock(FrequencyLock) {
                     freq = Frequency;
                 }
-
+                
                 if((SyncPulseTime > 0) && (freq != 0.0)){
-                    int interval = (int)Math.Round(1000.0 / (freq * 2.0));
+                    int interval = (int)Math.Round(1000.0 / (freq * 2.0)) ;
+                    _phaseShift = interval / 2;
                     long absOffset = (SyncPulseTime - NextPulseTime);
                     long relOffset = (absOffset + interval) % interval;
                     long realOffset = 0;
@@ -133,6 +134,7 @@ namespace ThreeByte.DMX
 
                     if(freq != 0.0) {
                         int interval = (int)Math.Round(1000.0 / (freq * 2.0));
+                        _phaseShift = interval / 2;
                         NextPulseTime = Watch.ElapsedMilliseconds + interval - PhaseShift;//Frequency calculation
                     } else {
                         Pulse(this, new StrobeEventArgs(true));  //Turn back to on
