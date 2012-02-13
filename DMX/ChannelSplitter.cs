@@ -8,7 +8,7 @@ namespace ThreeByte.DMX
 {
     public class ChannelSplitter : DependencyObject
     {
-        private readonly DMXControl _controller;
+        private readonly VariableDMXControl _controller;
         private readonly int _coarseChannel;
         private readonly int _fineChannel;
 
@@ -34,7 +34,7 @@ namespace ThreeByte.DMX
             splitter._controller.SetValues(splitValues);
         }
 
-        public ChannelSplitter(DMXControl controller, int coarseChannel, int fineChannel){
+        public ChannelSplitter(VariableDMXControl controller, int coarseChannel, int fineChannel) {
             _controller = controller;
             _coarseChannel = coarseChannel;
             _fineChannel = fineChannel;

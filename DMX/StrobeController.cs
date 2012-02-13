@@ -137,8 +137,10 @@ namespace ThreeByte.DMX
                         _phaseShift = interval / 2;
                         NextPulseTime = Watch.ElapsedMilliseconds + interval - PhaseShift;//Frequency calculation
                     } else {
-                        Pulse(this, new StrobeEventArgs(true));  //Turn back to on
-                        NextPulseTime = -1;
+                        if(Pulse != null) {
+                            Pulse(this, new StrobeEventArgs(true));  //Turn back to on
+                            NextPulseTime = -1;
+                        }
                     }
 
                     IsPulseOn = !IsPulseOn;
