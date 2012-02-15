@@ -64,8 +64,8 @@ namespace ThreeByte.DMX
             set {
                 lock(FrequencyLock) {
                     _frequency = value;
-                    if(NextPulseTime == -1) {
-                        NextPulseTime = 0;
+                    if(NextPulseOnTime == -1) {
+                        NextPulseOnTime = 0;
                     }
                 }
             }
@@ -84,15 +84,14 @@ namespace ThreeByte.DMX
 
         public bool IsPulseOn { get; private set; }
 
-        private long NextPulseTime;
+        private long NextPulseOnTime;
+        private long NextPulseOffTime;
         private long SyncPulseTime;
 
         public void SetNextPulse(int offsetMillis) {
             SyncPulseTime = Watch.ElapsedMilliseconds + offsetMillis;
             //Console.WriteLine("SyncPulse Time: {0}", SyncPulseTime);
         }
-
-
 
         private void RunPulse() {
 
@@ -102,48 +101,61 @@ namespace ThreeByte.DMX
                 lock(FrequencyLock) {
                     freq = Frequency;
                 }
-                
-                if((SyncPulseTime > 0) && (freq != 0.0)){
-                    int interval = (int)Math.Round(1000.0 / (freq * 2.0)) ;
-                    _phaseShift = interval / 2;
-                    long absOffset = (SyncPulseTime - NextPulseTime);
-                    long relOffset = (absOffset + interval) % interval;
-                    long realOffset = 0;
-                    if(Math.Abs(absOffset) < relOffset) {
-                        realOffset = absOffset;
-                    } else {
-                        realOffset = relOffset;
-                    }
+
+                int period = 0;
+                if(freq != 0.0) {
+                    //True period: 1/Hz
+                    period = (int)Math.Round(1000.0 / freq);
+                }
+
+                //*********************************************
+                //Synchronization correction
+                //*********************************************
+                long nextSyncPulseTime = SyncPulseTime; //Avoid double read errors on different threads
+                if((nextSyncPulseTime > 0) && (freq != 0.0)) {
+                    
+                    long absOffset = (nextSyncPulseTime - NextPulseOnTime);
+                    long relOffset = (long)(absOffset - (Math.Round(absOffset/(double)period) * (double)period));
+
                     SyncOffset = (int)(absOffset);
-                    if(Math.Abs(realOffset) > 10 && SyncNudge) {
-                        if(realOffset > 0) {
-                            Console.WriteLine("push -->: {0}/{1}/{2}", absOffset, relOffset, realOffset);
-                            NextPulseTime = NextPulseTime + 10;  //Nudge the pulse back to where it should be (10ms)
+                    if(Math.Abs(relOffset) > 10 && SyncNudge) {
+                        int nudge = (int)Math.Min(period / 16, Math.Abs(relOffset));
+                        if(relOffset > 0) {
+                            Console.WriteLine("push --> {2}: {0}/{1}", absOffset, relOffset, nudge);
+                            NextPulseOnTime = NextPulseOnTime + nudge;  //Nudge the pulse back to where it should be (10ms)
                         } else {
-                            Console.WriteLine("push <--: {0}/{1}/{2}", absOffset, relOffset, realOffset);
-                            NextPulseTime = NextPulseTime - 10;  //Nudge the pulse back to where it should be (10ms)
+                            Console.WriteLine("push <-- {2}: {0}/{1}", absOffset, relOffset, nudge);
+                            NextPulseOnTime = NextPulseOnTime - nudge;  //Nudge the pulse back to where it should be (10ms)
                         }
-                        //Only push the pulse time sooner
                     }
-                    //Console.WriteLine("Sync Pulse Offset: {0}", offset);
                     SyncPulseTime = 0;
                 }
 
-                if((Watch.ElapsedMilliseconds > NextPulseTime + PhaseShift)
-                    && (NextPulseTime > -1)) {
-
+                //***********************************
+                // Triggered Pulses
+                //***********************************
+                long currentTime = Watch.ElapsedMilliseconds;
+                if((currentTime > NextPulseOnTime + PhaseShift) && (NextPulseOnTime > -1)) {
                     if(freq != 0.0) {
-                        int interval = (int)Math.Round(1000.0 / (freq * 2.0));
-                        _phaseShift = interval / 2;
-                        NextPulseTime = Watch.ElapsedMilliseconds + interval - PhaseShift;//Frequency calculation
+                        _phaseShift = (period / 2);
+                        NextPulseOnTime = currentTime + period - PhaseShift;//Frequency calculation
+                        NextPulseOffTime = currentTime + (period / 2) - PhaseShift;//Frequency calculation
                     } else {
                         if(Pulse != null) {
                             Pulse(this, new StrobeEventArgs(true));  //Turn back to on
-                            NextPulseTime = -1;
+                            NextPulseOnTime = -1;
+                            NextPulseOffTime = -1;
                         }
                     }
 
-                    IsPulseOn = !IsPulseOn;
+                    IsPulseOn = true; //Explicitly Pulse On
+                    if(Pulse != null) {
+                        Pulse(this, new StrobeEventArgs(IsPulseOn));
+                    }
+                }
+
+                if((currentTime > NextPulseOffTime + PhaseShift) && (NextPulseOffTime > -1)) {
+                    IsPulseOn = false;  //Explicitly Pulse Off
                     if(Pulse != null) {
                         Pulse(this, new StrobeEventArgs(IsPulseOn));
                     }
@@ -155,7 +167,6 @@ namespace ThreeByte.DMX
                 if(!HIGH_PRIORITY) {
                     Thread.Sleep(1);
                 }
-                
             }
 
         }
