@@ -15,13 +15,18 @@ namespace ThreeByte.Converters
     public class BooleanToVisibilityConverter : IValueConverter
     {
         public bool Opposite { get; set; }
+        public Visibility HideState { get; set; }
+
+        public BooleanToVisibilityConverter() {
+            HideState = Visibility.Hidden;
+        }
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             bool val = System.Convert.ToBoolean(value);
             if(Opposite) {
-                return (val ? Visibility.Hidden : Visibility.Visible);
+                return (val ? HideState : Visibility.Visible);
             } else {
-                return (val ? Visibility.Visible : Visibility.Hidden);
+                return (val ? Visibility.Visible : HideState);
             }
         }
 

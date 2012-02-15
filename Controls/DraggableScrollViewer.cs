@@ -77,8 +77,6 @@ namespace ThreeByte.Controls
         }
 
 
-
-
         public DraggableScrollViewer() {
 
             this.HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden;
@@ -100,7 +98,7 @@ namespace ThreeByte.Controls
                 return;
             }
             mouseDownPoint = e.GetPosition(this);
-            scrollStartOffset.X = this.OffsetX;
+            scrollStartOffset.X = this.HorizontalOffset;
             scrollStartOffset.Y = this.VerticalOffset;
 
             if((this.ExtentWidth > this.ViewportWidth) || (this.ExtentHeight > this.ViewportHeight)) {
@@ -122,12 +120,11 @@ namespace ThreeByte.Controls
                 Point delta = new Point(mouseDownPoint.X - currentMousePosition.X,
                                         mouseDownPoint.Y - currentMousePosition.Y);
 
-                OffsetX = (int)(Math.Round(scrollStartOffset.X + delta.X));
-                OffsetY = (int)(Math.Round(scrollStartOffset.Y + delta.Y));
+                int maxOffsetX = (int)Math.Round(this.ExtentWidth - this.ViewportWidth);
+                int maxOffsetY = (int)Math.Round(this.ExtentHeight - this.ViewportHeight);
 
-                //this.ScrollToHorizontalOffset(scrollStartOffset.X + delta.X);
-                //this.ScrollToVerticalOffset(scrollStartOffset.Y + delta.Y);
-                //log.DebugFormat("Scroller Delta {0} / {1}", delta.X, delta.Y);
+                OffsetX = Math.Max(Math.Min((int)(Math.Round(scrollStartOffset.X + delta.X)), maxOffsetX), 0);
+                OffsetY = Math.Max(Math.Min((int)(Math.Round(scrollStartOffset.Y + delta.Y)), maxOffsetY), 0);
             } 
 
             //Console.WriteLine("Scroller Extents {0} / {1}", this.ExtentHeight, this.ExtentWidth);

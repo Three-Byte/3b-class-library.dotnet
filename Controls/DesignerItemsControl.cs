@@ -58,16 +58,6 @@ namespace ThreeByte.Controls
             }
         }
 
-        //private AdornerLayer adornerLayer;
-
-        //private bool _mouseIsDown;
-        //private bool _isDragging;
-
-        //public FrameworkElement SelectedItem;
-
-        ////Drag testing
-        //private Point _mouseStartPoint;
-        //private Point _elementStartPosition;
 
         private Boundary _bounds;
         public Boundary Bounds {
