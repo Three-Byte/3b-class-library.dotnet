@@ -107,6 +107,11 @@ namespace ThreeByte.DMX
                     //True period: 1/Hz
                     period = (int)Math.Round(1000.0 / freq);
                 }
+                if(period > 1000) {
+                    //The period should never be more than 1 second
+                    Console.WriteLine("Period compression: {0} --> 1000", period);
+                    period = 1000;
+                }
 
                 //*********************************************
                 //Synchronization correction

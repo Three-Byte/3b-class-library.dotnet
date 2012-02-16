@@ -13,7 +13,7 @@ namespace ThreeByte.Converters
     public class FrozenImageConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            //Take a URI and 
+            //Take a URI and open it and freeze it
 
             string path = System.Convert.ToString(value);
             if(string.IsNullOrEmpty(path)) {
