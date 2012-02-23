@@ -5,11 +5,15 @@ using System.Text;
 using System.Diagnostics;
 using System.Threading;
 using System.ComponentModel;
+using log4net;
 
 namespace ThreeByte.DMX
 {
     public class StrobeController : IDisposable, INotifyPropertyChanged
     {
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(StrobeController));
+
         private Stopwatch Watch = Stopwatch.StartNew();
         private Thread PulseThread;
         private static readonly bool HIGH_PRIORITY = false;
@@ -109,7 +113,7 @@ namespace ThreeByte.DMX
                 }
                 if(period > 1000) {
                     //The period should never be more than 1 second
-                    Console.WriteLine("Period compression: {0} --> 1000", period);
+                    log.Info(string.Format("Period compression: {0} --> 1000", period));
                     period = 1000;
                 }
 
@@ -123,13 +127,16 @@ namespace ThreeByte.DMX
                     long relOffset = (long)(absOffset - (Math.Round(absOffset/(double)period) * (double)period));
 
                     SyncOffset = (int)(absOffset);
+
+                    log.Info(string.Format("Checking for sync correction, relOffset: {0}, SyncNudge: {1}", Math.Abs(relOffset), SyncNudge));
+
                     if(Math.Abs(relOffset) > 10 && SyncNudge) {
                         int nudge = (int)Math.Min(period / 16, Math.Abs(relOffset));
                         if(relOffset > 0) {
-                            Console.WriteLine("push --> {2}: {0}/{1}", absOffset, relOffset, nudge);
+                            log.Info(string.Format("push --> {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
                             NextPulseOnTime = NextPulseOnTime + nudge;  //Nudge the pulse back to where it should be (10ms)
                         } else {
-                            Console.WriteLine("push <-- {2}: {0}/{1}", absOffset, relOffset, nudge);
+                            log.Info(string.Format("push <-- {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
                             NextPulseOnTime = NextPulseOnTime - nudge;  //Nudge the pulse back to where it should be (10ms)
                         }
                     }
