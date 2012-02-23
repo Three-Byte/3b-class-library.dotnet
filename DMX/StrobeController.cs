@@ -100,6 +100,7 @@ namespace ThreeByte.DMX
         private void RunPulse() {
 
             while(true) {
+                Debug.Assert(NextPulseOnTime >= -1, "Next pulse should never be less than -1");
 
                 double freq;
                 lock(FrequencyLock) {
@@ -137,7 +138,7 @@ namespace ThreeByte.DMX
                             NextPulseOnTime = NextPulseOnTime + nudge;  //Nudge the pulse back to where it should be (10ms)
                         } else {
                             log.Info(string.Format("push <-- {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
-                            NextPulseOnTime = NextPulseOnTime - nudge;  //Nudge the pulse back to where it should be (10ms)
+                            NextPulseOnTime = Math.Max(NextPulseOnTime - nudge, 0);  //Nudge the pulse back to where it should be (10ms), but never less than 0
                         }
                     }
                     SyncPulseTime = 0;
@@ -150,8 +151,8 @@ namespace ThreeByte.DMX
                 if((currentTime > NextPulseOnTime + PhaseShift) && (NextPulseOnTime > -1)) {
                     if(freq != 0.0) {
                         _phaseShift = (period / 2);
-                        NextPulseOnTime = currentTime + period - PhaseShift;//Frequency calculation
-                        NextPulseOffTime = currentTime + (period / 2) - PhaseShift;//Frequency calculation
+                        NextPulseOnTime = Math.Max(currentTime + period - PhaseShift, 0);  //Ensure this isn't ever < 0 in (very early) corner cases
+                        NextPulseOffTime = Math.Max(currentTime + (period / 2) - PhaseShift, 0);
                     } else {
                         if(Pulse != null) {
                             Pulse(this, new StrobeEventArgs(true));  //Turn back to on
