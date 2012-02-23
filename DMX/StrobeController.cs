@@ -128,7 +128,7 @@ namespace ThreeByte.DMX
 
                     SyncOffset = (int)(absOffset);
 
-                    log.Info(string.Format("Checking for sync correction, relOffset: {0}, SyncNudge: {1}", Math.Abs(relOffset), SyncNudge));
+                    log.Info(string.Format("Checking for sync correction, relOffset: {0}, SyncNudge: {1}, Period: {2}, NextPulseOnTime: {3}", Math.Abs(relOffset), SyncNudge, period, NextPulseOnTime));
 
                     if(Math.Abs(relOffset) > 10 && SyncNudge) {
                         int nudge = (int)Math.Min(period / 16, Math.Abs(relOffset));
