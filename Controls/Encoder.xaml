@@ -1,0 +1,16 @@
+﻿<UserControl x:Class="ThreeByte.Controls.Encoder"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d">
+    <Grid Name="grid">
+        <Thumb Name="encThumb" Opacity="0" DragStarted="encThumb_DragStarted" DragCompleted="encThumb_DragCompleted" DragDelta="encThumb_DragDelta"/>
+        <Viewbox Name="enc" Loaded="enc_Loaded" RenderTransformOrigin="0.5, 0.5">
+            <Grid Width="76" Height="76">
+                <Ellipse IsHitTestVisible="False" Width="76" Height="76" Stroke="Black" />
+                <Line X1="38" X2="38" Y1="0" Y2="38" Stroke="Black"/>
+            </Grid>
+        </Viewbox>
+    </Grid>
+</UserControl>

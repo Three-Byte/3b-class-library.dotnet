@@ -101,6 +101,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controls\AnimatedStackPanel.cs" />
+    <Compile Include="Controls\Encoder.xaml.cs">
+      <DependentUpon>Encoder.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\NudgeSlider.xaml.cs">
       <DependentUpon>NudgeSlider.xaml</DependentUpon>
     </Compile>
@@ -138,6 +141,8 @@
     <Compile Include="Converters\NullableBooleanConverter.cs" />
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="DMX\ChannelSplitter.cs" />
+    <Compile Include="DMX\DMXRouter.cs" />
+    <Compile Include="DMX\IDMXControl.cs" />
     <Compile Include="DMX\StrobeController.cs" />
     <Compile Include="DMX\VariableDMXControl.cs" />
     <Compile Include="DMX\DynamicRangeFader.xaml.cs">
@@ -201,6 +206,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\Encoder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\NudgeSlider.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

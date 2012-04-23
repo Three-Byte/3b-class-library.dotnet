@@ -12,7 +12,7 @@ namespace ThreeByte.DMX
     /// <summary>
     /// For output only DMX transmission using Enttec DMX USB PRO
     /// </summary>
-    public class VariableDMXControl : INotifyPropertyChanged, IDisposable
+    public class VariableDMXControl : INotifyPropertyChanged, IDisposable, IDMXControl
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(DMXControl));
 
