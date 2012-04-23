@@ -28,7 +28,20 @@ namespace ThreeByte.Serial {
 
         #region Public Properties
 
-        public string COMPort { get; set; }
+        private string _comPort;
+        public string COMPort {
+            get {
+                return _comPort;
+            }
+            set {
+                if(_comPort != value) {
+                    Enabled = false;
+                    _comPort = value;
+                    Enabled = true;
+                }
+                NotifyPropertyChanged("COMPort");
+            }
+        }
 
         public bool HasData {
             get { return _incomingData.Count > 0; }
@@ -96,17 +109,12 @@ namespace ThreeByte.Serial {
 
         private bool _disposed = false;
 
-        private IAsyncResult _writeResult = null;
-        private IAsyncResult _readResult = null;
-
         #endregion Private Members
 
         public SerialLink(string comPort, bool enabled = true) {
-            COMPort = comPort;
-
+            _comPort = comPort;
             _incomingData = new List<byte[]>();
-
-            Enabled = true;
+            Enabled = enabled;
         }
 
         private void SafeClose() {
