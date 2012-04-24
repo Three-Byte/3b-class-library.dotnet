@@ -7,5 +7,7 @@ namespace ThreeByte.DMX {
         bool IsOpen { get; }
         void SetAll(byte val);
         void SetValues(Dictionary<int, byte> values);
+        void SetValues(Dictionary<int, byte> values, int numberOfChannels);
+        string COMPort { get; set; }
     }
 }

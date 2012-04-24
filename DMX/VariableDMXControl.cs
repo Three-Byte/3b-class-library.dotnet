@@ -28,7 +28,13 @@ namespace ThreeByte.DMX
         private object _serialLock = new object();
         private byte[] _dmxValues;
 
-        private readonly string _comPort;
+        private string _comPort;
+        public string COMPort {
+            get { return _comPort; }
+            set { 
+                _comPort = value;
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string propertyName) {
@@ -125,6 +131,15 @@ namespace ThreeByte.DMX
             lock(_dmxValues) {
                 foreach(int i in values.Keys) {
                     _dmxValues[i] = values[i];
+                }
+                SendDMXData(_dmxValues);
+            }
+        }
+
+        public void SetValues(Dictionary<int, byte> values, int startChannel) {
+            lock(_dmxValues) {
+                foreach(int i in values.Keys) {
+                    _dmxValues[i - startChannel] = values[i];
                 }
                 SendDMXData(_dmxValues);
             }

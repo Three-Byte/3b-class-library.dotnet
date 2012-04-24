@@ -142,6 +142,7 @@
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="DMX\ChannelSplitter.cs" />
     <Compile Include="DMX\DMXRouter.cs" />
+    <Compile Include="DMX\DMXUniverse.cs" />
     <Compile Include="DMX\IDMXControl.cs" />
     <Compile Include="DMX\StrobeController.cs" />
     <Compile Include="DMX\VariableDMXControl.cs" />
