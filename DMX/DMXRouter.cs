@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using log4net;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Xml.Linq;
+using log4net;
 
 namespace ThreeByte.DMX {
     public class DMXRouter : INotifyPropertyChanged {
@@ -14,12 +12,15 @@ namespace ThreeByte.DMX {
         private static readonly ILog log = LogManager.GetLogger(typeof(DMXRouter));
 
         private const int DMX_UNIVERSE_SIZE = 512;
-        private const int TOTAL_DMX_CHANNELS = 4096;
+        public static int TOTAL_DMX_CHANNELS = 4096;
 
         #region Public Properties
         //DMX Universes are numbered sequentially, (ie: dmxUniverse 0 has channels 0 - 511, 1 has channels 512 - 1023, etc)
         public List<DMXUniverse> DMXUniverses = new List<DMXUniverse>();
 
+        /// <summary>
+        /// Dictionary of DMX Channel/8-bit values
+        /// </summary>
         private Dictionary<int, byte> _dmxValues = new Dictionary<int, byte>();        
         public Dictionary<int, byte> DMXValues {
             get {
@@ -33,15 +34,14 @@ namespace ThreeByte.DMX {
             }
         }
 
+        /// <summary>
+        /// String representation of the DMXValues Dictionary
+        /// </summary>
         public List<string> DMXValueList {
             get {
                 return ConvertDictionaryToString(_dmxValues);
             }
-        }
-
-        public void Refresh() {
-            NotifyPropertyChanged("DMXValueList");
-        }
+        }        
         #endregion Public Properties
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -52,6 +52,12 @@ namespace ThreeByte.DMX {
             }
         }
 
+        /// <summary>
+        /// Forces Property Change Notification
+        /// </summary>
+        public void Refresh() {
+            NotifyPropertyChanged("DMXValueList");
+        }
 
         /// <summary>
         /// Constructor for DMXRouter
@@ -64,6 +70,9 @@ namespace ThreeByte.DMX {
             LoadExistingUniverses();
         }
 
+        /// <summary>
+        /// Converts Dictionary pairs to Key + NewLine + Value string
+        /// </summary>
         private List<string> ConvertDictionaryToString(Dictionary<int, byte> dict) {
             List<string> list = new List<string>();
 
@@ -73,10 +82,10 @@ namespace ThreeByte.DMX {
 
             return list;
         }
-
         
-
-
+        /// <summary>
+        /// If the xml config file exists, load up date from the file and populate the DMXUniverses
+        /// </summary>
         public void LoadExistingUniverses() {
             string filePath = "Config\\DMXUniverseConfig.xml";
 
@@ -160,10 +169,38 @@ namespace ThreeByte.DMX {
         }
 
         /// <summary>
+        /// Set dmx values for an arbitrary set of dmx channels
+        /// DMX channels are filtered into the proper DMX Universe
+        /// </summary>
+        /// <param name="dmxChannelVals">Dictionary of channel/16-bit dmx value pairs</param>
+        public void SetDMXValues(Dictionary<int, int> dmxChannelVals) {
+            Dictionary<int, byte> translatedDMXVals = Get8BitDMXValues(dmxChannelVals);
+
+            foreach(int i in translatedDMXVals.Keys) {
+                foreach(DMXUniverse dmxU in DMXUniverses) {
+                    if(dmxU.DMXValues != null) {
+                        if(dmxU.DMXValues.ContainsKey(i)) {
+                            dmxU.DMXValues[i] = translatedDMXVals[i];
+                        }
+                    }
+                }
+            }
+
+            foreach(DMXUniverse dmxU in DMXUniverses) {
+                if(dmxU.DMXValues != null) {
+                    dmxU.DmxController.SetValues(dmxU.DMXValues, dmxU.StartChannel);
+                }
+            }
+
+            CombineDMXValues();
+        }
+
+        /// <summary>
         /// Sets dmx values for a given set of channels
         /// </summary>
         /// <param name="channelValues">Dictionary of dmx channel/value pairs</param>
         private void CombineDMXValues(){
+            DMXValues = new Dictionary<int, byte>();
 
             foreach(DMXUniverse dmxU in DMXUniverses) {
                 if(dmxU.DmxController != null){
@@ -174,6 +211,13 @@ namespace ThreeByte.DMX {
             }
         }
 
+
+        /// <summary>
+        /// Retrieves DMX Values for a specific universe or all universes if not specified
+        /// Most likely will not be used.
+        /// </summary>
+        /// <param name="universeID">DMX Universe ID</param>
+        /// <returns>Dictionary of DMX channel/value pairs</returns>
         public Dictionary<int, byte> GetDMXValues(int universeID = -1) {
             Dictionary<int, byte> dmxValues = new Dictionary<int, byte>();
             if(universeID > -1) {
@@ -186,7 +230,7 @@ namespace ThreeByte.DMX {
             } else {
                 // Get all DMX Values from All Universes
                 foreach(DMXUniverse dmxU in DMXUniverses) {
-                    dmxValues.Union(dmxU.DMXValues);
+                    dmxValues = dmxValues.Union(dmxU.DMXValues).ToDictionary(a => a.Key, b => b.Value);
                 }
 
                 dmxValues = dmxValues.Select( d => new { d.Key, d.Value }).ToDictionary( d => d.Key, d => d.Value );                    
@@ -195,13 +239,16 @@ namespace ThreeByte.DMX {
             return dmxValues;
         }
 
+        /// <summary>
+        /// Updates the universe and saves the xml for dmx universes
+        /// </summary>
+        /// <param name="dmxU">DMX Universe to save</param>
         public void SaveTheUniverse(DMXUniverse dmxU) {
             try {
                 DMXUniverse universeToSave = SetUniverseChannels(dmxU.ID, dmxU.StartChannel, dmxU.NumberOfChannels);
 
                 DMXUniverses[universeToSave.ID] = universeToSave;
 
-                //TODO: Save to XML
                 string folderPath = "Config";
                 string filePath = folderPath + "\\DMXUniverseConfig.xml";
 
@@ -221,6 +268,22 @@ namespace ThreeByte.DMX {
             } catch(Exception ex) {
                 log.Error(ex);
             }
+        }
+
+        /// <summary>
+        /// Converts 16-bit channel/values to 8-bit channel/values
+        /// </summary>
+        /// <param name="DMX16BitValues">Dictionary of DMX channel/16-bit value pairs</param>
+        /// <returns></returns>
+        private Dictionary<int, byte> Get8BitDMXValues(Dictionary<int, int> DMX16BitValues) {
+            Dictionary<int, byte> dmx8BitValues = new Dictionary<int, byte>();
+
+            foreach(int i in DMX16BitValues.Keys) {
+                dmx8BitValues.Add(i, (byte)(DMX16BitValues[i] / 256));
+                dmx8BitValues.Add(i + 1, (byte)(DMX16BitValues[i] % 256));
+            }
+
+            return dmx8BitValues;
         }
     }
 

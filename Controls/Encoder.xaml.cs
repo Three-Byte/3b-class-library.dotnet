@@ -31,7 +31,8 @@ namespace ThreeByte.Controls {
         public event EncoderTurnedEventHandler EncoderTurned;
         public delegate void EncoderTurnedEventHandler(Object sender, EncoderTurnedEventArgs e);
 
-        
+        private double _maxValue = 65535;
+        private double _minValue = 0;
 
         public double InitialRotation { get; set; }
         protected RotateTransform encoderRotateTransform;
@@ -53,6 +54,28 @@ namespace ThreeByte.Controls {
             ValueMinimum = 1;
             PreviousValue = ValueMinimum;
             InitializeComponent();
+        }
+
+        public static readonly DependencyProperty ResolutionProperty = DependencyProperty.Register("Resolution", typeof(double), typeof(Encoder),
+            new FrameworkPropertyMetadata(16.0, ResolutionChanged));
+
+        private static void ResolutionChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e) {
+            Encoder encoder = (Encoder)obj;
+            encoder.UpdateRange();
+        }
+
+        public double Resolution {
+            get {
+                return (double)GetValue(ResolutionProperty);
+            }
+            set {
+                SetValue(ResolutionProperty, value);
+            }
+        }
+
+        private void UpdateRange() {
+            this.ValueMaximum = Math.Min(EncoderValue + (int)Math.Pow(2, Resolution), _maxValue);
+            this.ValueMinimum = Math.Max(EncoderValue - (int)Math.Pow(2, Resolution), _minValue);
         }
 
         private void encThumb_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e) {
