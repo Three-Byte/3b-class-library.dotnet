@@ -154,6 +154,7 @@
     <Compile Include="DMX\LightingFader.xaml.cs">
       <DependentUpon>LightingFader.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileUtilities\PathUtil.cs" />
     <Compile Include="Logging\LogUtil.cs" />
     <Compile Include="Logging\RecentEventAppender.cs" />
     <Compile Include="Media\Boundary.cs" />
