@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Ports;
 using System.ComponentModel;
 using log4net;
+using ThreeByte.Serial;
 
 namespace ThreeByte.DMX
 {
@@ -21,11 +22,12 @@ namespace ThreeByte.DMX
         private const byte DMX_START_CODE = 0x7E;
         private const byte DMX_END_CODE = 0xE7;
         private const byte DMX_HEADER_LENGTH = 4;
-        private readonly int DMX_PACKET_SIZE;
+        
 
-        private SerialPort _serialPort;
-        private Stream _serialPortStream;
-        private object _serialLock = new object();
+        private SerialLink serialLink;
+        //private SerialPort _serialPort;
+        //private Stream _serialPortStream;
+        //private object _serialLock = new object();
         private byte[] _dmxValues;
 
         private string _comPort;
@@ -36,6 +38,19 @@ namespace ThreeByte.DMX
             }
         }
 
+        private int _dmxPacketSize;
+        public int DMXPacketSize {
+            get { return _dmxPacketSize; }
+            set {
+                _dmxPacketSize = value;
+                if(_dmxValues != null) {
+                    byte[] tmpDmxValues = _dmxValues;
+                    _dmxValues = new byte[_dmxPacketSize];
+                    tmpDmxValues.CopyTo(_dmxValues, 0);
+                }
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string propertyName) {
             if(PropertyChanged != null) {
@@ -43,49 +58,53 @@ namespace ThreeByte.DMX
             }
         }
 
+        private int StartChannel = 0;
 
-        public VariableDMXControl(string comPort, int channelCount) {
+        public VariableDMXControl(string comPort, int channelCount, int startChannel = 0) {
             _comPort = comPort;
-            DMX_PACKET_SIZE = channelCount;
-            _dmxValues = new byte[DMX_PACKET_SIZE];
+            DMXPacketSize = channelCount + startChannel;
+            _dmxValues = new byte[DMXPacketSize];
+            StartChannel = startChannel;
+            serialLink = new SerialLink(_comPort);
         }
 
         private bool _openError = false;
-        public void Init() {
-            try {
-                lock(_serialLock) {
-                    if(_isDisposed) {
-                        return;
-                    }
-                    //If you don't hold onto and dispose of the stream explicity it will cause an
-                    //uncatchable UnauthorizedAccessException
-                    //See: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=140018
-                    if(_serialPortStream != null) {
-                        _serialPortStream.Dispose();
-                    }
-                    if(_serialPort != null) {
-                        _serialPort.Dispose();
-                    }
-                    _serialPort = new SerialPort(_comPort);
-                }
-                _serialPort.Open();
-                _serialPortStream = _serialPort.BaseStream;
-                _openError = false;
-            } catch(Exception ex) {
-                if(!_openError || _wasOpen){
-                    log.Error("Error opening serial port: " + _comPort, ex);
-                }
-                _openError = true;
-            }
-            NotifyPropertyChanged("IsOpen");
-        }
+        //public void Init() {
+        //    try {
+        //        lock(_serialLock) {
+        //            if(_isDisposed) {
+        //                return;
+        //            }
+        //            //If you don't hold onto and dispose of the stream explicity it will cause an
+        //            //uncatchable UnauthorizedAccessException
+        //            //See: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=140018
+        //            if(_serialPortStream != null) {
+        //                _serialPortStream.Dispose();
+        //            }
+        //            if(_serialPort != null) {
+        //                _serialPort.Dispose();
+        //            }
+        //            _serialPort = new SerialPort(_comPort);
+        //        }
+        //        _serialPort.Open();
+        //        _serialPortStream = _serialPort.BaseStream;
+        //        _openError = false;
+        //    } catch(Exception ex) {
+        //        if(!_openError || _wasOpen){
+        //            log.Error("Error opening serial port: " + _comPort, ex);
+        //        }
+        //        _openError = true;
+        //    }
+        //    NotifyPropertyChanged("IsOpen");
+        //}
 
         public bool IsOpen {
             get {
                 try {
-                    lock(_serialLock) {
-                        return _serialPort.IsOpen;
-                    }
+                    return serialLink.IsOpen;
+                    //lock(_serialLock) {
+                    //    return _serialPort.IsOpen;
+                    //}
                 } catch(Exception ex) {
                     log.Error("IsOpen Exception", ex);
                 }
@@ -138,9 +157,12 @@ namespace ThreeByte.DMX
 
         public void SetValues(Dictionary<int, byte> values, int startChannel) {
             lock(_dmxValues) {
+                Console.WriteLine("Start Channel: " + startChannel);
                 foreach(int i in values.Keys) {
                     _dmxValues[i - startChannel] = values[i];
+                    Console.WriteLine(string.Format("SetValues: _dmxValues[{0}]: {1}, values[{2}]", i - startChannel, _dmxValues[i - startChannel], i));
                 }
+
                 SendDMXData(_dmxValues);
             }
         }
@@ -151,7 +173,7 @@ namespace ThreeByte.DMX
                 return;
             }
 
-            if(data.Length > DMX_PACKET_SIZE){
+            if(data.Length > DMXPacketSize){
                 throw new ArgumentOutOfRangeException("DMX data is limited to 512 bytes");
             }
 
@@ -161,60 +183,66 @@ namespace ThreeByte.DMX
             _wasOpen = IsOpen;
 
 
-            byte[] sendBuffer = new byte[DMX_PACKET_SIZE + DMX_HEADER_LENGTH + 1];
+            byte[] sendBuffer = new byte[DMXPacketSize + DMX_HEADER_LENGTH + 1];
             //HEADER
             sendBuffer[0] = DMX_START_CODE;
             sendBuffer[1] = SEND_DMX_TX_MODE;
-            sendBuffer[2] = (byte)(DMX_PACKET_SIZE & 0xFF); //LSB
-            sendBuffer[3] = (byte)(DMX_PACKET_SIZE >> 8); //MSB
+            sendBuffer[2] = (byte)(DMXPacketSize & 0xFF); //LSB
+            sendBuffer[3] = (byte)(DMXPacketSize >> 8); //MSB
             //DATA VALUES
             data.CopyTo(sendBuffer, DMX_HEADER_LENGTH);
             //FOOTER
             sendBuffer[sendBuffer.Length - 1] = DMX_END_CODE;
-            
+
             try {
-                lock(_serialLock) {
-                    _serialPort.Write(sendBuffer, 0, sendBuffer.Length);
-                }
+                serialLink.SendData(sendBuffer);
             } catch(Exception ex) {
-                if (!_openError)
-                {
-                    log.Error("Serial Transmit Error", ex);
-                }
-                try {
-                    lock(_serialLock) {
-                        _serialPort.Close();
-                    }
-                } catch(Exception ex2) {
-                    if (!_openError)
-                    {
-                        log.Error("Error closing the serial port", ex2);
-                    }
-                }
-                Init();
+                log.Error(ex);
             }
+
+            //try {
+            //    lock(_serialLock) {
+            //        _serialPort.Write(sendBuffer, 0, sendBuffer.Length);
+            //    }
+            //} catch(Exception ex) {
+            //    if (!_openError)
+            //    {
+            //        log.Error("Serial Transmit Error", ex);
+            //    }
+            //    try {
+            //        lock(_serialLock) {
+            //            _serialPort.Close();
+            //        }
+            //    } catch(Exception ex2) {
+            //        if (!_openError)
+            //        {
+            //            log.Error("Error closing the serial port", ex2);
+            //        }
+            //    }
+            //    Init();
+            //}
         }
 
         private bool _isDisposed = false;
         public void Dispose() {
-            
-            lock(_serialLock) {
-                if(_isDisposed) {
-                    throw new ObjectDisposedException("DMX Control Previously disposed");
-                }
-                _isDisposed = true;
-                //If you don't hold onto and dispose of the stream explicity it will cause an
-                //uncatchable UnauthorizedAccessException
-                //See: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=140018
-                if(_serialPortStream != null) {
-                    _serialPortStream.Dispose();
-                    _serialPortStream = null;
-                }
-                if(_serialPort != null) {
-                    _serialPort.Dispose();
-                    _serialPort = null;
-                }
-            }
+            serialLink.Dispose();
+            //lock(_serialLock) {
+            //    if(_isDisposed) {
+            //        throw new ObjectDisposedException("DMX Control Previously disposed");
+            //    }
+            //    _isDisposed = true;
+            //    //If you don't hold onto and dispose of the stream explicity it will cause an
+            //    //uncatchable UnauthorizedAccessException
+            //    //See: http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=140018
+            //    if(_serialPortStream != null) {
+            //        _serialPortStream.Dispose();
+            //        _serialPortStream = null;
+            //    }
+            //    if(_serialPort != null) {
+            //        _serialPort.Dispose();
+            //        _serialPort = null;
+            //    }
+            //}
         }
 
     }

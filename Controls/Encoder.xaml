@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d">
     <Grid Name="grid">
-        <Thumb Name="encThumb" Opacity="0" DragStarted="encThumb_DragStarted" DragCompleted="encThumb_DragCompleted" DragDelta="encThumb_DragDelta"/>
+        <Thumb Name="encThumb" Opacity="0" DragStarted="encThumb_DragStarted" DragCompleted="encThumb_DragCompleted" DragDelta="encThumb_DragDelta" />
         <Viewbox Name="enc" Loaded="enc_Loaded" RenderTransformOrigin="0.5, 0.5">
             <Grid Width="76" Height="76">
                 <Ellipse IsHitTestVisible="False" Width="76" Height="76" Stroke="Black" />

@@ -82,6 +82,8 @@ namespace ThreeByte.Serial {
             }
         }
 
+        public int BaudRate { get; private set; }
+
         public event EventHandler DataReceived;
 
         private Exception _error;
@@ -111,10 +113,11 @@ namespace ThreeByte.Serial {
 
         #endregion Private Members
 
-        public SerialLink(string comPort, bool enabled = true) {
+        public SerialLink(string comPort, bool enabled = true, int baudRate = 9600) {
             _comPort = comPort;
             _incomingData = new List<byte[]>();
-            Enabled = enabled;
+            BaudRate = baudRate;
+            Enabled = enabled;            
         }
 
         private void SafeClose() {
@@ -156,7 +159,7 @@ namespace ThreeByte.Serial {
             lock(_serialLock) {
                 if(_serialPort == null || !IsOpen) {
                     SafeClose();
-                    _serialPort = new SerialPort(COMPort);
+                    _serialPort = new SerialPort(COMPort, BaudRate);
                     _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
                 }
 

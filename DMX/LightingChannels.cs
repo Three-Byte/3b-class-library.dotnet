@@ -70,7 +70,7 @@ namespace ThreeByte.DMX
             _dimmerMap = dimmerMap;
 
             _dmxController = dmxController;
-            _dmxController.Init();
+            //_dmxController.Init();
 
             Recall();
 

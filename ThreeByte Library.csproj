@@ -144,6 +144,8 @@
     <Compile Include="DMX\DMXRouter.cs" />
     <Compile Include="DMX\DMXUniverse.cs" />
     <Compile Include="DMX\IDMXControl.cs" />
+    <Compile Include="DMX\LightChannel.cs" />
+    <Compile Include="DMX\PageMapping.cs" />
     <Compile Include="DMX\StrobeController.cs" />
     <Compile Include="DMX\VariableDMXControl.cs" />
     <Compile Include="DMX\DynamicRangeFader.xaml.cs">
