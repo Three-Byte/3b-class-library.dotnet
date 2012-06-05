@@ -22,9 +22,6 @@ namespace ThreeByte.Controls {
             public EncoderTurnedEventArgs(double value) { this.Value = value; }
         }
 
-        private double _maxValue = 65535;
-        private double _minValue = 0;
-
         public event EncoderStartedEventHandler EncoderStarted;
         public delegate void EncoderStartedEventHandler(Object sender, EncoderTurnedEventArgs e);
 

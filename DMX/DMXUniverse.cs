@@ -31,7 +31,9 @@ namespace ThreeByte.DMX {
 
             if(DmxController != null) {
                 XElement controller = new XElement("Controller");
-                controller.Add(new XAttribute("COMPort", DmxController.COMPort));
+                if(DmxController is VariableDMXControl) {
+                    controller.Add(new XAttribute("COMPort", ((DMXControl)DmxController).COMPort));
+                }
                 controller.Add(new XAttribute("Enabled", DmxController.Enabled));
 
                 dmxUXML.Add(controller);
