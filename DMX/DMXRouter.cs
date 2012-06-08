@@ -45,7 +45,7 @@ namespace ThreeByte.DMX {
             }
         }
 
-        private PageMapping _pageMapping = new PageMapping();
+        private PageMapping _pageMapping;
         public PageMapping PageMapping {
             get { return _pageMapping; }
             set {
@@ -59,6 +59,9 @@ namespace ThreeByte.DMX {
                 foreach(int k in _dmxValues.Keys.OrderBy(p => p).ToList()) {
                     bool isSpecial = false;
 
+                    //if(PageMapping == null) {
+                    //    return channels;
+                    //}
                     foreach(int enc in PageMapping.encoderChannels.Keys) {
                         if(PageMapping.encoderChannels[enc].Count(lc => lc.CoarseChannel == k) > 0) {
                             isSpecial = true;
@@ -90,11 +93,11 @@ namespace ThreeByte.DMX {
         /// <summary>
         /// String representation of the DMXValues Dictionary
         /// </summary>
-        public List<string> DMXValueList {
-            get {
-                return ConvertDictionaryToString(_dmxValues);
-            }
-        }        
+        //public List<string> DMXValueList {
+        //    get {
+        //        return ConvertDictionaryToString(_dmxValues);
+        //    }
+        //}        
         #endregion Public Properties
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -109,21 +112,11 @@ namespace ThreeByte.DMX {
         /// Forces Property Change Notification
         /// </summary>
         public void Refresh() {
-            NotifyPropertyChanged("DMXValueList");
+            //NotifyPropertyChanged("DMXValueList");
             NotifyPropertyChanged("DMXValues");
             NotifyPropertyChanged("DMXChannelValues");
         }
 
-        /// <summary>
-        /// Constructor for DMXRouter
-        /// </summary>
-        public DMXRouter() {
-            for(int i = 0; i < 8; i++) {
-                DMXUniverses.Add(new DMXUniverse() { ID = i, NumberOfChannels = 0, LightChannels = new List<LightChannel>() });
-            }
-
-            LoadExistingUniverses();
-        }
 
         /// <summary>
         /// Converts Dictionary pairs to Key + NewLine + Value string
@@ -138,27 +131,13 @@ namespace ThreeByte.DMX {
             return list;
         }
         
-        /// <summary>
-        /// If the xml config file exists, load up date from the file and populate the DMXUniverses
-        /// </summary>
-        public void LoadExistingUniverses() {
-            string filePath = "Config\\DMXUniverseConfig.xml";
-
-            if(File.Exists(filePath)) {
-                XElement root = XElement.Load(filePath);
-                
-                for(int i=0; i < DMXUniverses.Count; i++) {
-                    XElement xmlUniverse = (from u in root.Elements("DMXUniverse")
-                                            where int.Parse(u.Attribute("ID").Value.ToString()) == DMXUniverses[i].ID
-                                            select u).FirstOrDefault();
-
-                    DMXUniverses[i] = DMXUniverse.FromXml(xmlUniverse);
-
-                    if(DMXUniverses[i].NumberOfChannels != 0) {
-                        SetUniverseChannels(DMXUniverses[i].ID, DMXUniverses[i].StartChannel, DMXUniverses[i].LightChannels, DMXUniverses[i].NumberOfChannels);
-                    }
-                }
+        public static DMXRouter FromXml(XElement node) {
+            DMXRouter newRouter = new DMXRouter();
+            foreach(XElement uNode in node.Elements("DMXUniverse")) {
+                DMXUniverse universe = DMXUniverse.FromXml(uNode);
+                newRouter.DMXUniverses.Add(universe);
             }
+            return newRouter;
         }
 
         /// <summary>
@@ -167,7 +146,7 @@ namespace ThreeByte.DMX {
         /// <param name="universeID">DMX Universe ID</param>
         /// <param name="startingChannel">Universe Initial Channel Number</param>
         /// <param name="numberOfChannels">The number of channels that belong to the universe</param>
-        private DMXUniverse SetUniverseChannels(int universeID, int startingChannel, List<LightChannel> lightChannels, int numberOfChannels = DMX_UNIVERSE_SIZE) {
+        private void SetUniverseChannels(int universeID, int startingChannel, List<LightChannel> lightChannels, int numberOfChannels = DMX_UNIVERSE_SIZE) {
             //Check that we're not asking for more channels than a universe can handle
             if(numberOfChannels > DMX_UNIVERSE_SIZE) {
                 throw new DMXRouterException("Number of Channels is greater than 512");
@@ -185,7 +164,7 @@ namespace ThreeByte.DMX {
 
             DMXUniverse dmxU = DMXUniverses.SingleOrDefault(d => d.ID == universeID);
 
-            if(dmxU != null) {                
+            //if(dmxU != null) {                
 
                 //Check our current DMX Universe against all others for used channels
                 foreach(DMXUniverse dmx in DMXUniverses.Where(d => d.ID != dmxU.ID)) {
@@ -207,7 +186,7 @@ namespace ThreeByte.DMX {
 
                 dmxU.StartChannel = startingChannel;
                 dmxU.NumberOfChannels = numberOfChannels;
-                dmxU.DmxController.DMXPacketSize = numberOfChannels + startingChannel;
+                //dmxU.DmxController.DMXPacketSize = numberOfChannels + startingChannel;
                 dmxU.LightChannels = new List<LightChannel>();
                 bool initializeLightChannels = true;
                 if(lightChannels.Count > 0) {
@@ -232,13 +211,13 @@ namespace ThreeByte.DMX {
 
                 //Set the dmx values for the universe
                 if(initialValues.Count > 0) {
-                    dmxU.DmxController.SetValues(initialValues, dmxU.StartChannel);
-                    dmxU.DMXValues = initialValues;
+                    dmxU.SetValues(initialValues, dmxU.StartChannel);
+                    //dmxU.DMXValues = initialValues;
                     CombineDMXValues();
                 }
-            }
+            //}
 
-            return dmxU;
+            //return dmxU;
         }
 
         /// <summary>
@@ -261,11 +240,12 @@ namespace ThreeByte.DMX {
 
             foreach(DMXUniverse dmxU in DMXUniverses) {
                 if(dmxU.DMXValues != null) {
-                    dmxU.DmxController.SetValues(dmxU.DMXValues);//, dmxU.StartChannel);
+                    dmxU.SetValues(dmxU.DMXValues);//, dmxU.StartChannel);
                 }
             }
 
             CombineDMXValues();
+            Refresh();
         }
 
         /// <summary>
@@ -273,13 +253,9 @@ namespace ThreeByte.DMX {
         /// </summary>
         /// <param name="channelValues">Dictionary of dmx channel/value pairs</param>
         private void CombineDMXValues(){
-            DMXValues = new Dictionary<int, byte>();
-
             foreach(DMXUniverse dmxU in DMXUniverses) {
-                if(dmxU.DmxController != null){
-                    if(dmxU.DMXValues != null) {
-                        DMXValues = DMXValues.Union(dmxU.DMXValues).ToDictionary(a => a.Key, b => b.Value);
-                    }
+                foreach(int channel in dmxU.DMXValues.Keys) {
+                    DMXValues[channel] = dmxU.DMXValues[channel];
                 }
             }
         }
@@ -291,26 +267,26 @@ namespace ThreeByte.DMX {
         /// </summary>
         /// <param name="universeID">DMX Universe ID</param>
         /// <returns>Dictionary of DMX channel/value pairs</returns>
-        public Dictionary<int, byte> GetDMXValues(int universeID = -1) {
-            Dictionary<int, byte> dmxValues = new Dictionary<int, byte>();
-            if(universeID > -1) {
-                // Get DMX Values for specific universe
-                DMXUniverse dmxU = DMXUniverses.SingleOrDefault(d => d.ID == universeID);
+        //public Dictionary<int, byte> GetDMXValues(int universeID = -1) {
+        //    Dictionary<int, byte> dmxValues = new Dictionary<int, byte>();
+        //    if(universeID > -1) {
+        //        // Get DMX Values for specific universe
+        //        DMXUniverse dmxU = DMXUniverses.SingleOrDefault(d => d.ID == universeID);
 
-                if(dmxU != null) {
-                    dmxValues = dmxU.DMXValues;
-                }
-            } else {
-                // Get all DMX Values from All Universes
-                foreach(DMXUniverse dmxU in DMXUniverses) {
-                    dmxValues = dmxValues.Union(dmxU.DMXValues).ToDictionary(a => a.Key, b => b.Value);
-                }
+        //        if(dmxU != null) {
+        //            dmxValues = dmxU.DMXValues;
+        //        }
+        //    } else {
+        //        // Get all DMX Values from All Universes
+        //        foreach(DMXUniverse dmxU in DMXUniverses) {
+        //            dmxValues = dmxValues.Union(dmxU.DMXValues).ToDictionary(a => a.Key, b => b.Value);
+        //        }
 
-                dmxValues = dmxValues.Select( d => new { d.Key, d.Value }).ToDictionary( d => d.Key, d => d.Value );                    
-            }
+        //        dmxValues = dmxValues.Select( d => new { d.Key, d.Value }).ToDictionary( d => d.Key, d => d.Value );                    
+        //    }
 
-            return dmxValues;
-        }
+        //    return dmxValues;
+        //}
 
         /// <summary>
         /// Updates the universe and saves the xml for dmx universes
@@ -322,27 +298,35 @@ namespace ThreeByte.DMX {
 
                 SetUniverseChannels(universeToSave.ID, universeToSave.StartChannel, universeToSave.LightChannels, universeToSave.NumberOfChannels);
 
-                DMXUniverses[universeToSave.ID] = universeToSave;
+                //DMXUniverses[universeToSave.ID] = universeToSave;
 
-                string folderPath = "Config";
-                string filePath = folderPath + "\\DMXUniverseConfig.xml";
+                //string folderPath = "Config";
+                //string filePath = folderPath + "\\DMXUniverseConfig.xml";
 
-                if(!Directory.Exists(folderPath)) {
-                    Directory.CreateDirectory(folderPath);
-                }
+                //if(!Directory.Exists(folderPath)) {
+                //    Directory.CreateDirectory(folderPath);
+                //}
 
-                XElement dmxUniverseConfig = new XElement("SkySpace");
-                foreach(DMXUniverse d in DMXUniverses) {
-                    dmxUniverseConfig.Add(d.ToXml());
-                }
+                //XElement dmxUniverseConfig = new XElement("SkySpace");
+                //foreach(DMXUniverse d in DMXUniverses) {
+                //    dmxUniverseConfig.Add(d.ToXml());
+                //}
 
-                dmxUniverseConfig.Save(filePath);
+                //dmxUniverseConfig.Save(filePath);
             } catch(DMXRouterException dex) {
                 log.Warn(dex);
                 throw dex;
             } catch(Exception ex) {
                 log.Error(ex);
             }
+        }
+
+        public XElement ToXml() {
+            XElement node = new XElement("SkySpace");
+            foreach(DMXUniverse d in DMXUniverses) {
+                node.Add(d.ToXml());
+            }
+            return node;
         }
 
         /// <summary>
@@ -359,6 +343,17 @@ namespace ThreeByte.DMX {
             }
 
             return dmx8BitValues;
+        }
+
+        public LightChannel GetLightChannel(string id) {
+            foreach(DMXUniverse u in DMXUniverses) {
+                foreach(LightChannel lc in u.LightChannels) {
+                    if(lc.ID == id) {
+                        return lc;
+                    }
+                }
+            }
+            throw new ArgumentException("Lighting channel does not exist: " + id, "id");
         }
     }
 

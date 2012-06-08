@@ -10,17 +10,76 @@ namespace ThreeByte.DMX {
 
         #region Public Properties
 
-        public int ID { get; set; }
+        public DMXUniverse(int id) {
+            ID = id;
+            LightChannels = new List<LightChannel>();
+            DMXValues = new Dictionary<int, byte>();
+        }
+
+        public int ID { get; private set; }
         public string Label { 
             get; set; 
         }
-        public int StartChannel { get; set; }
-        public int NumberOfChannels { get; set; }
-        public IDMXControl DmxController { get; set; }
-        public Dictionary<int, byte> DMXValues { get; set; }
+
+        private int _startChannel;
+        public int StartChannel {
+            get {
+                return _startChannel;
+            }
+            set {
+                _startChannel = value;
+                UpdateDMXValueRange();
+            }
+        }
+
+        private int _numberOfChannels;
+        public int NumberOfChannels {
+            get {
+                return _numberOfChannels;
+            }
+            set {
+                _numberOfChannels = value;
+                UpdateDMXValueRange();
+            }
+        }
+        private IDMXControl DmxController { get; set; }
+        public Dictionary<int, byte> DMXValues { get; private set; }
         public List<LightChannel> LightChannels { get; set; }
 
         #endregion Public Properties
+
+        public void Blackout() {
+
+        }
+
+        private void UpdateDMXValueRange() {
+
+            HashSet<int> includedChannels = new HashSet<int>(DMXValues.Keys);
+            foreach(int c in includedChannels) {
+                if((c < StartChannel) || (c > (StartChannel + NumberOfChannels))) {
+                    DMXValues.Remove(c);
+                }
+            }
+
+            for(int c = StartChannel; c < StartChannel + NumberOfChannels; ++c) {
+                if(!DMXValues.ContainsKey(c)) {
+                    DMXValues[c] = 0;
+                }
+            }
+
+        }
+
+        public void SetValues(Dictionary<int, byte> values) {
+            if(DmxController != null) {
+                DmxController.SetValues(values);
+            }
+        }
+
+        public void SetValues(Dictionary<int, byte> values, int startChannel) {
+            if(DmxController != null) {
+                DmxController.SetValues(values, startChannel);
+            }
+        }
 
         public XElement ToXml() {
             XElement dmxUXML = new XElement("DMXUniverse");
@@ -32,7 +91,7 @@ namespace ThreeByte.DMX {
             if(DmxController != null) {
                 XElement controller = new XElement("Controller");
                 if(DmxController is VariableDMXControl) {
-                    controller.Add(new XAttribute("COMPort", ((DMXControl)DmxController).COMPort));
+                    controller.Add(new XAttribute("COMPort", ((VariableDMXControl)DmxController).COMPort));
                 }
                 controller.Add(new XAttribute("Enabled", DmxController.Enabled));
 
@@ -44,8 +103,9 @@ namespace ThreeByte.DMX {
                 foreach(LightChannel lc in LightChannels) {
                     XElement lcElement = new XElement("LightChannel");
                     lcElement.Add(new XAttribute("Name", lc.Name ?? ""));
-                    lcElement.Add(new XAttribute("Coarse", lc.CoarseChannel));
                     lcElement.Add(new XAttribute("Fine", lc.FineChannel));
+                    lcElement.Add(new XAttribute("Coarse", lc.CoarseChannel));
+                    lcElement.Add(new XAttribute("ID", lc.ID));
                     lights.Add(lcElement);
                 }
 
@@ -56,9 +116,7 @@ namespace ThreeByte.DMX {
         }
 
         public static DMXUniverse FromXml(XElement dmxUConfig) {
-            DMXUniverse dmxU = new DMXUniverse();
-
-            dmxU.ID = int.Parse(dmxUConfig.Attribute("ID").Value.ToString());
+            DMXUniverse dmxU = new DMXUniverse(int.Parse(dmxUConfig.Attribute("ID").Value.ToString()));
             dmxU.Label = dmxUConfig.Attribute("Label").Value.ToString();
             dmxU.StartChannel = int.Parse(dmxUConfig.Attribute("StartChannel").Value.ToString());
             dmxU.NumberOfChannels = int.Parse(dmxUConfig.Attribute("NumberOfChannels").Value.ToString());

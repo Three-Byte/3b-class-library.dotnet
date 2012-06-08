@@ -14,7 +14,6 @@ namespace ThreeByte.DMX {
         private static readonly ILog log = LogManager.GetLogger(typeof(PageMapping));
 
         //each color encoder maps to an arbitrary number of channels
-        //public Dictionary<int, List<int>> encoderChannels = new Dictionary<int, List<int>>();
         public Dictionary<int, List<LightChannel>> encoderChannels = new Dictionary<int, List<LightChannel>>();
         DMXRouter _dmxRouter;
 
@@ -96,7 +95,12 @@ namespace ThreeByte.DMX {
             foreach(int encoder in encoderChannels.Keys) {
                 XElement encNode = new XElement("Encoder");
                 encNode.Add(new XAttribute("ID", encoder));
-                encNode.Add(new XAttribute("Channels", ListToCommaSeparated(encoderChannels[encoder])));
+                //XElement channelNode = new XElement("Channels");
+                foreach(LightChannel lc in encoderChannels[encoder]) {
+                    encNode.Add(new XElement("Light", new XAttribute("ID", lc.ID)));
+                }
+                //encNode.Add(channelNode);
+                //encNode.Add(new XAttribute("Channels", ListToCommaSeparated(encoderChannels[encoder])));
                 pmXML.Add(encNode);
             }
 
@@ -111,7 +115,13 @@ namespace ThreeByte.DMX {
             pageMapping.PageName = pageMappingConfig.Attribute("Name").Value.ToString();
             pageMapping.encoderChannels = new Dictionary<int, List<LightChannel>>(); //new Dictionary<int, List<int>>();
             foreach(XElement encoder in pageMappingConfig.Elements("Encoder")) {
-                pageMapping.encoderChannels.Add(int.Parse(encoder.Attribute("ID").Value.ToString()), CommaSeparatedToChannelList(encoder.Attribute("Channels").Value.ToString(), dmxRouter));
+                int encoderID = int.Parse(encoder.Attribute("ID").Value);
+                pageMapping.encoderChannels[encoderID] = new List<LightChannel>();
+                foreach(XElement channel in encoder.Elements("Light")) {
+                    LightChannel light = dmxRouter.GetLightChannel(channel.Attribute("ID").Value);
+                    pageMapping.encoderChannels[encoderID].Add(light);
+                }
+                //pageMapping.encoderChannels.Add(int.Parse(encoder.Attribute("ID").Value.ToString()), CommaSeparatedToChannelList(encoder.Attribute("Channels").Value.ToString(), dmxRouter));
                 //pageMapping.encoderChannels.Add(int.Parse(encoder.Attribute("ID").Value.ToString()), 
                 //    CommaSeparatedToList(encoder.Attribute("Channels").Value.ToString()));
             }
@@ -145,26 +155,26 @@ namespace ThreeByte.DMX {
         /// </summary>
         /// <param name="cs"></param>
         /// <returns></returns>
-        public static List<LightChannel> CommaSeparatedToChannelList(string cs, DMXRouter dmxRouter) {
-            List<LightChannel> lcList = new List<LightChannel>();
+        //public static List<LightChannel> CommaSeparatedToChannelList(string cs, DMXRouter dmxRouter) {
+        //    List<LightChannel> lcList = new List<LightChannel>();
 
-            cs = cs.Replace(" ", "");
+        //    cs = cs.Replace(" ", "");
 
-            if(cs.Length > 0) {
-                string[] csArray = cs.Split(',');
+        //    if(cs.Length > 0) {
+        //        string[] csArray = cs.Split(',');
 
-                foreach(string s in csArray) {
-                    foreach(DMXUniverse dmxU in dmxRouter.DMXUniverses) {
-                        List<LightChannel> lcInUse = dmxU.LightChannels.Where(lc => lc.Name == s).ToList<LightChannel>();
-                        if(lcInUse.Count() == 1) {
-                            lcList.Add(lcInUse[0]);     
-                        }
-                    }
-                }
-            }
+        //        foreach(string s in csArray) {
+        //            foreach(DMXUniverse dmxU in dmxRouter.DMXUniverses) {
+        //                List<LightChannel> lcInUse = dmxU.LightChannels.Where(lc => lc.Name == s).ToList<LightChannel>();
+        //                if(lcInUse.Count() == 1) {
+        //                    lcList.Add(lcInUse[0]);     
+        //                }
+        //            }
+        //        }
+        //    }
 
-            return lcList;
-        }
+        //    return lcList;
+        //}
 
         /// <summary>
         /// 
@@ -186,15 +196,15 @@ namespace ThreeByte.DMX {
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static string ListToCommaSeparated(List<LightChannel> list) {
-            string cs = "";
+        //public static string ListToCommaSeparated(List<LightChannel> list) {
+        //    string cs = "";
 
-            foreach(LightChannel lc in list) {
-                cs += lc.Name + ",";
-            }
+        //    foreach(LightChannel lc in list) {
+        //        cs += lc.Name + ",";
+        //    }
 
-            return cs.TrimEnd(',');
-        }
+        //    return cs.TrimEnd(',');
+        //}
 
         /// <summary>
         /// 
