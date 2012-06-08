@@ -26,13 +26,14 @@ namespace ThreeByte.DMX
         private SerialLink serialLink;
         private byte[] _dmxValues;
 
-        private string _comPort;
         public string COMPort {
-            get { return _comPort; }
-            set { 
-                _comPort = value;
+            get { return serialLink.COMPort; }
+            set {
+                serialLink.COMPort = value;
             }
         }
+
+        public string HardwareID { get { return COMPort; } }
 
         private int _dmxPacketSize;
         public int DMXPacketSize {
@@ -56,12 +57,13 @@ namespace ThreeByte.DMX
 
         private int StartChannel = 0;
 
+        public VariableDMXControl(string comPort) : this(comPort, 512) { }
+
         public VariableDMXControl(string comPort, int channelCount, int startChannel = 0) {
-            _comPort = comPort;
             DMXPacketSize = channelCount + startChannel;
             _dmxValues = new byte[DMXPacketSize];
             StartChannel = startChannel;
-            serialLink = new SerialLink(_comPort);
+            serialLink = new SerialLink(comPort);
         }
 
         public bool IsOpen {

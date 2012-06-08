@@ -42,7 +42,7 @@ namespace ThreeByte.DMX {
                 UpdateDMXValueRange();
             }
         }
-        private IDMXControl DmxController { get; set; }
+        public IDMXControl DmxController { get; set; }
         public Dictionary<int, byte> DMXValues { get; private set; }
         public List<LightChannel> LightChannels { get; set; }
 
@@ -88,16 +88,6 @@ namespace ThreeByte.DMX {
             dmxUXML.Add(new XAttribute("StartChannel", StartChannel));
             dmxUXML.Add(new XAttribute("NumberOfChannels", NumberOfChannels));
 
-            if(DmxController != null) {
-                XElement controller = new XElement("Controller");
-                if(DmxController is VariableDMXControl) {
-                    controller.Add(new XAttribute("COMPort", ((VariableDMXControl)DmxController).COMPort));
-                }
-                controller.Add(new XAttribute("Enabled", DmxController.Enabled));
-
-                dmxUXML.Add(controller);
-            }
-
             if(LightChannels != null) {
                 XElement lights = new XElement("LightChannels");
                 foreach(LightChannel lc in LightChannels) {
@@ -121,16 +111,10 @@ namespace ThreeByte.DMX {
             dmxU.StartChannel = int.Parse(dmxUConfig.Attribute("StartChannel").Value.ToString());
             dmxU.NumberOfChannels = int.Parse(dmxUConfig.Attribute("NumberOfChannels").Value.ToString());
 
-            if(dmxUConfig.Element("Controller") != null) {
-                XElement controller = dmxUConfig.Element("Controller");
-                dmxU.DmxController = new VariableDMXControl(controller.Attribute("COMPort").Value.ToString(), dmxU.NumberOfChannels, dmxU.StartChannel);
-                dmxU.DmxController.Enabled = bool.Parse(controller.Attribute("Enabled").Value.ToString());               
-            }
-
             if(dmxUConfig.Element("LightChannels") != null) {
                 dmxU.LightChannels = new List<LightChannel>();
                 foreach(XElement lc in dmxUConfig.Element("LightChannels").Elements("LightChannel")) {
-                    dmxU.LightChannels.Add(new LightChannel() { Name = lc.Attribute("Name").Value.ToString(), CoarseChannel = int.Parse(lc.Attribute("Coarse").Value.ToString()), FineChannel = int.Parse(lc.Attribute("Fine").Value.ToString()), UniverseID = dmxU.ID });
+                    dmxU.LightChannels.Add(new LightChannel() { Name = lc.Attribute("Name").Value, CoarseChannel = int.Parse(lc.Attribute("Coarse").Value), FineChannel = int.Parse(lc.Attribute("Fine").Value), UniverseID = dmxU.ID });
                 }
             }
 

@@ -33,6 +33,8 @@ namespace ThreeByte.DMX
             set { _comPort = value; }
         }
 
+        public string HardwareID { get { return COMPort; } }
+
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged(string propertyName) {
             if(PropertyChanged != null) {
