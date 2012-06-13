@@ -88,12 +88,12 @@ namespace ThreeByte.Serial {
         private MemoryStream _incomingBuffer;
 
 
-        public FramedSerialLink(string comPort, bool enabled = true) {
+        public FramedSerialLink(string comPort, bool enabled = true, int baudRate = 9600) {
 
             _incomingBuffer = new MemoryStream(2048);
             _incomingData = new List<string>();
 
-            _serialLink = new SerialLink(comPort);
+			_serialLink = new SerialLink(comPort, enabled, baudRate);
             _serialLink.DataReceived += new EventHandler(_serialLink_DataReceived);
             _serialLink.PropertyChanged += new PropertyChangedEventHandler(_serialLink_PropertyChanged);
 

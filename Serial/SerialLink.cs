@@ -43,6 +43,24 @@ namespace ThreeByte.Serial {
             }
         }
 
+
+		private int _baudRate = 9600;
+		public int BaudRate {
+			get {
+				return _baudRate;
+			}
+			set {
+				int oldBaudRate = _baudRate;
+				_baudRate = value;
+				if (oldBaudRate != _baudRate) {
+					Enabled = !Enabled;
+					Enabled = !Enabled;
+				}
+			}
+		}
+
+
+
         public bool HasData {
             get { return _incomingData.Count > 0; }
         }
@@ -81,8 +99,6 @@ namespace ThreeByte.Serial {
                 }
             }
         }
-
-        public int BaudRate { get; private set; }
 
         public event EventHandler DataReceived;
 
