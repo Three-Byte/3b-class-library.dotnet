@@ -96,6 +96,7 @@ namespace ThreeByte.DMX {
                     lcElement.Add(new XAttribute("Fine", lc.FineChannel));
                     lcElement.Add(new XAttribute("Coarse", lc.CoarseChannel));
                     lcElement.Add(new XAttribute("ID", lc.ID));
+                    lcElement.Add(new XAttribute("Preview", lc.PreviewColor.ToString()));
                     lights.Add(lcElement);
                 }
 
@@ -114,7 +115,16 @@ namespace ThreeByte.DMX {
             if(dmxUConfig.Element("LightChannels") != null) {
                 dmxU.LightChannels = new List<LightChannel>();
                 foreach(XElement lc in dmxUConfig.Element("LightChannels").Elements("LightChannel")) {
-                    dmxU.LightChannels.Add(new LightChannel() { Name = lc.Attribute("Name").Value, CoarseChannel = int.Parse(lc.Attribute("Coarse").Value), FineChannel = int.Parse(lc.Attribute("Fine").Value), UniverseID = dmxU.ID });
+                    string previewColor = string.Empty;
+                    if(lc.Attribute("Preview") != null) {
+                        previewColor = lc.Attribute("Preview").Value;
+                    }
+                    dmxU.LightChannels.Add(new LightChannel() {
+                        Name = lc.Attribute("Name").Value,
+                        CoarseChannel = int.Parse(lc.Attribute("Coarse").Value),
+                        FineChannel = int.Parse(lc.Attribute("Fine").Value),
+                        UniverseID = dmxU.ID,
+                        PreviewColor = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(previewColor)});
                 }
             }
 
