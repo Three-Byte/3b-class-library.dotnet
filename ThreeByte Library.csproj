@@ -104,6 +104,9 @@
     <Compile Include="Controls\Encoder.xaml.cs">
       <DependentUpon>Encoder.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\Keyboard\NativeWin32.cs" />
+    <Compile Include="Controls\Keyboard\ShiftableButton.cs" />
+    <Compile Include="Controls\Keyboard\VirtualKeyboard.cs" />
     <Compile Include="Controls\NudgeSlider.xaml.cs">
       <DependentUpon>NudgeSlider.xaml</DependentUpon>
     </Compile>
