@@ -44,20 +44,19 @@ namespace ThreeByte.Serial {
         }
 
 
-		private int _baudRate = 9600;
-		public int BaudRate {
-			get {
-				return _baudRate;
-			}
-			set {
-				int oldBaudRate = _baudRate;
-				_baudRate = value;
-				if (oldBaudRate != _baudRate) {
-					Enabled = !Enabled;
-					Enabled = !Enabled;
-				}
-			}
-		}
+        private int _baudRate = 9600;
+        public int BaudRate {
+            get {
+                return _baudRate;
+            }
+            set {
+                int oldBaudRate = _baudRate;
+                _baudRate = value;
+                if(oldBaudRate != _baudRate) {
+                    Enabled = !Enabled;
+                }
+            }
+        }
 
 
 
@@ -133,7 +132,7 @@ namespace ThreeByte.Serial {
             _comPort = comPort;
             _incomingData = new List<byte[]>();
             BaudRate = baudRate;
-            Enabled = enabled;            
+            Enabled = enabled;
         }
 
         private void SafeClose() {
@@ -141,9 +140,13 @@ namespace ThreeByte.Serial {
 
             lock(_serialLock) {
                 if(_serialPort != null) {
-                    if(_serialPort.IsOpen) {
-                        _serialPort.Close();
-                        _serialPort.DataReceived -= _serialPort_DataReceived;
+                    try {
+                        if(_serialPort.IsOpen) {
+                            _serialPort.Close();
+                            _serialPort.DataReceived -= _serialPort_DataReceived;
+                        }
+                    } catch(ObjectDisposedException objDisEx) {
+                        log.Error(objDisEx);
                     }
                 }
                 _serialPort = null;
@@ -173,22 +176,26 @@ namespace ThreeByte.Serial {
             }
 
             lock(_serialLock) {
-                if(_serialPort == null || !IsOpen) {
-                    SafeClose();
-                    _serialPort = new SerialPort(COMPort, BaudRate);
-                    _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
-                }
-
-                if(!IsOpen) {
-                    log.Info("Connecting: " + COMPort);
-                    try {
-                        _serialPort.Open();                        
-                        IsOpen = true;
-                    } catch(Exception ex) {
-                        log.Error("Serial Connection Error", ex);
-                        Error = ex;
-                        IsOpen = false;
+                try {
+                    if(_serialPort == null || !IsOpen) {
+                        SafeClose();
+                        _serialPort = new SerialPort(COMPort, BaudRate);
+                        _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
                     }
+
+                    if(!IsOpen) {
+                        log.Info("Connecting: " + COMPort);
+                        try {
+                            _serialPort.Open();
+                            IsOpen = true;
+                        } catch(Exception ex) {
+                            log.Error("Serial Connection Error", ex);
+                            Error = ex;
+                            IsOpen = false;
+                        }
+                    }
+                } catch(ObjectDisposedException objDisEx) {
+                    log.Error(objDisEx);
                 }
             }
         }
