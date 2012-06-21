@@ -223,6 +223,9 @@ namespace ThreeByte.Serial {
                     _serialLink.SendData(messageBytes);
                 } catch(ObjectDisposedException ode) {
                     log.Error(ode.Message);
+                } catch(Exception ex) {
+                    //Also possible for the serial link to raise and UnauthorizedAccessException here
+                    log.Error("SendMessage error", ex);
                 }
         }
 
