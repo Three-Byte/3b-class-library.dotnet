@@ -147,6 +147,8 @@
     <Compile Include="Converters\NullableBooleanConverter.cs" />
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="DMX\ChannelSplitter.cs" />
+    <Compile Include="DMX\DmxAnimation.cs" />
+    <Compile Include="DMX\DmxAnimationBase.cs" />
     <Compile Include="DMX\DMXUniverse.cs" />
     <Compile Include="DMX\IDMXControl.cs" />
     <Compile Include="DMX\LightChannel.cs" />
