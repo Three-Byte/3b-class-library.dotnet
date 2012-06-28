@@ -36,6 +36,7 @@ namespace ThreeByte.DMX
 
         private Dictionary<int, int> fromValues;
         private Dictionary<int, int> toValues;
+        private HashSet<int> channelsSet = new HashSet<int>();
 
         protected override Dictionary<int, int> GetCurrentValueCore(Dictionary<int, int> defaultOriginValue,
                                                                     Dictionary<int, int> defaultDestinationValue,
@@ -54,6 +55,8 @@ namespace ThreeByte.DMX
             fromValues = From ?? defaultOriginValue;
             toValues = To ?? defaultDestinationValue;
 
+            channelsSet.Clear();
+
             //Interpolate the values
             foreach(int c in fromValues.Keys) {
                 int newValue = fromValues[c];
@@ -64,6 +67,14 @@ namespace ThreeByte.DMX
                     //This value doesn't change
                 }
                 returnValue[c] = newValue;
+                channelsSet.Add(c);
+            }
+
+            foreach(int c in toValues.Keys) {
+                if(!channelsSet.Contains(c)) {
+                    returnValue[c] = (int)Math.Round(progress * toValues[c]);
+                }
+                channelsSet.Add(c);
             }
 
             return returnValue;

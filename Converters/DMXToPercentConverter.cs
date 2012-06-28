@@ -12,7 +12,7 @@ namespace ThreeByte.Converters {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             int val = (int)value;
 
-            return (int)(Math.Round(val * 100.0 / 65535.0));
+            return val * 100.0 / 65535.0;
         }
 
 
