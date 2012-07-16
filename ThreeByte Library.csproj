@@ -126,6 +126,7 @@
     <Compile Include="Converters\DMXToPercentConverter.cs" />
     <Compile Include="Converters\MultiplyConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\TimeSpanToDateTimeConverter.cs" />
     <Compile Include="Converters\TimeSpanToDurationConverter.cs" />
     <Compile Include="Converters\ReverseVisibilityConverter.cs" />
     <Compile Include="Converters\IncrementConverter.cs" />
