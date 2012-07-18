@@ -18,7 +18,7 @@ namespace ThreeByte.Converters
         private static readonly TimeSpan DEFAULT_TIMESPAN = TimeSpan.FromSeconds(0);
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            if(!(value is TimeSpan)) {
+            if(!(value is TimeSpan) || ((TimeSpan)value) < DEFAULT_TIMESPAN) {
                 return new Duration(DEFAULT_TIMESPAN);
             }
             return new Duration((TimeSpan)value);
