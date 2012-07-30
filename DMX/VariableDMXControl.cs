@@ -21,7 +21,7 @@ namespace ThreeByte.DMX
         private const byte SEND_DMX_TX_MODE = 6;
         private const byte DMX_START_CODE = 0x7E;
         private const byte DMX_END_CODE = 0xE7;
-        private const byte DMX_HEADER_LENGTH = 4;
+        private const byte DMX_HEADER_LENGTH = 5;
 
         private SerialLink serialLink;
         private byte[] _dmxValues;
@@ -111,10 +111,11 @@ namespace ThreeByte.DMX
             }
         }
 
+        //These values are 1 indexed - but the sent data is 0-indexed
         public void SetValues(Dictionary<int, byte> values) {
             lock(_dmxValues) {
                 foreach(int i in values.Keys) {
-                    _dmxValues[i] = values[i];
+                    _dmxValues[i-1] = values[i];
                 }
                 SendDMXData(_dmxValues);
             }
@@ -152,8 +153,10 @@ namespace ThreeByte.DMX
             //HEADER
             sendBuffer[0] = DMX_START_CODE;
             sendBuffer[1] = SEND_DMX_TX_MODE;
-            sendBuffer[2] = (byte)(DMXPacketSize & 0xFF); //LSB
-            sendBuffer[3] = (byte)(DMXPacketSize >> 8); //MSB
+            sendBuffer[2] = (byte)((DMXPacketSize + 1) & 0xFF); //LSB
+            sendBuffer[3] = (byte)((DMXPacketSize + 1) >> 8); //MSB
+            sendBuffer[4] = (byte)0; //Start Code - zero for normal DMX data
+            
             //DATA VALUES
             data.CopyTo(sendBuffer, DMX_HEADER_LENGTH);
             //FOOTER

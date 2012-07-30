@@ -125,6 +125,7 @@
     <Compile Include="Converters\IntToVisibilityConverter.cs" />
     <Compile Include="Converters\DimensionToBoundaryConverter.cs" />
     <Compile Include="Converters\DMXToPercentConverter.cs" />
+    <Compile Include="Converters\ItemCountToRowConverter.cs" />
     <Compile Include="Converters\MultiplyConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\TimeSpanToDateTimeConverter.cs" />

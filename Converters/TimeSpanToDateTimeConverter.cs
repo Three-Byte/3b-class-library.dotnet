@@ -9,7 +9,7 @@ namespace ThreeByte.Converters {
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             TimeSpan timespan = (TimeSpan)value;
-            DateTime datetime = new DateTime(0);
+            DateTime datetime = DateTime.Now;
             if(timespan.Ticks >= 0) {
                 datetime = new DateTime(timespan.Ticks);
             }
