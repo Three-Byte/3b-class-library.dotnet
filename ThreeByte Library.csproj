@@ -145,6 +145,7 @@
     <Compile Include="Converters\ParallaxOffsetConverter.cs" />
     <Compile Include="Converters\PercentClampConverter.cs" />
     <Compile Include="Converters\PercentToGridLengthConverter.cs" />
+    <Compile Include="Converters\TimeSpanToStringConverter.cs" />
     <Compile Include="Converters\UppercaseConverter.cs" />
     <Compile Include="Converters\ListViewItemStyleSelector.cs" />
     <Compile Include="Converters\NullableBooleanConverter.cs" />
