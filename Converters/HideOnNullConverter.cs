@@ -14,15 +14,17 @@ namespace ThreeByte.Converters
     {
 
         public Visibility HideState { get; set; }
+        public bool TestWhiteSpace { get; set; }
 
         public HideOnNullConverter() {
             HideState = Visibility.Hidden;
+            TestWhiteSpace = true;
         }
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             if(value == null) {
                 return HideState;
-            } else if(string.IsNullOrWhiteSpace(value as string)) {
+            } else if(TestWhiteSpace && string.IsNullOrWhiteSpace(value as string)) {
                 return HideState;
             }
 
