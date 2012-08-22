@@ -121,6 +121,7 @@
     <Compile Include="Converters\ByteStreamToImageConverter.cs" />
     <Compile Include="Converters\ByteDoubleConverter.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
+    <Compile Include="Converters\DoubleToPercentageConverter.cs" />
     <Compile Include="Converters\ParameterEqualVisibilityConverter.cs" />
     <Compile Include="Converters\StringToCharArrayConverter.cs" />
     <Compile Include="Converters\EqualityVisibilityConverter.cs" />
