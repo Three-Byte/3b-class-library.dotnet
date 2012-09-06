@@ -17,8 +17,8 @@ namespace ThreeByte.Converters {
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
-            DateTime datetime = (DateTime)value;
-            TimeSpan timespan = TimeSpan.FromTicks(datetime.Ticks);
+            DateTime datetime = DateTime.Parse(value.ToString());
+            TimeSpan timespan = TimeSpan.FromTicks(datetime.TimeOfDay.Ticks);
             return timespan;
         }
     }
