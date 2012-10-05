@@ -82,7 +82,6 @@ namespace ThreeByte.DMX
 
         public override bool IsDestinationDefault {
             get {
-                //TODO: What should this be?
                 return base.IsDestinationDefault;
             }
         }
