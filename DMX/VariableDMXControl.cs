@@ -56,10 +56,12 @@ namespace ThreeByte.DMX
         }
 
         private int StartChannel = 0;
+        private int ChannelCount;
 
         public VariableDMXControl(string comPort) : this(comPort, 512) { }
 
         public VariableDMXControl(string comPort, int channelCount, int startChannel = 0) {
+            ChannelCount = channelCount;
             DMXPacketSize = channelCount + startChannel;
             _dmxValues = new byte[DMXPacketSize];
             StartChannel = startChannel;
@@ -91,12 +93,12 @@ namespace ThreeByte.DMX
         public byte this[int i] {
             get {
                 lock(_dmxValues) {
-                    return _dmxValues[i];
+                    return _dmxValues[i-1];
                 }
             }
             set {
                 lock(_dmxValues) {
-                    _dmxValues[i] = value;
+                    _dmxValues[i-1] = value;
                     SendDMXData(_dmxValues);
                 }
             }
@@ -104,8 +106,8 @@ namespace ThreeByte.DMX
 
         public void SetAll(byte val) {
             lock(_dmxValues) {
-                for(int i = 1; i < 512; i++) {
-                    _dmxValues[i] = val;
+                for(int i = 1; i <= ChannelCount; i++) {
+                    _dmxValues[i-1] = val;
                 }
                 SendDMXData(_dmxValues);
             }
@@ -125,7 +127,7 @@ namespace ThreeByte.DMX
             lock(_dmxValues) {
                 Console.WriteLine("Start Channel: " + startChannel);
                 foreach(int i in values.Keys) {
-                    _dmxValues[i - startChannel] = values[i];
+                    _dmxValues[i - startChannel - 1] = values[i];
                     Console.WriteLine(string.Format("SetValues: _dmxValues[{0}]: {1}, values[{2}]", i - startChannel, _dmxValues[i - startChannel], i));
                 }
 
