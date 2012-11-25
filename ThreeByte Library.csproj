@@ -181,6 +181,9 @@
     <Compile Include="Network\AsyncNetworkLink.cs" />
     <Compile Include="Network\BroadcastListener.cs" />
     <Compile Include="Network\AsyncUdpLink.cs" />
+    <Compile Include="Network\ChristieProjector.cs" />
+    <Compile Include="Network\PowerStrip.cs" />
+    <Compile Include="Network\KissBox.cs" />
     <Compile Include="Network\NetworkServerManager.cs" />
     <Compile Include="Network\FrameBasedEventManager.cs" />
     <Compile Include="Network\FramedByteNetworkLink.cs" />
