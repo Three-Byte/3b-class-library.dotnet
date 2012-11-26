@@ -5,14 +5,12 @@ using System.Text;
 using System.ComponentModel;
 using ThreeByte.Network;
 using System.Net.Sockets;
+using System.Net;
 
 namespace ThreeByte.Network
 {
     public class PowerStrip : IDisposable, INotifyPropertyChanged
     {
-        //Telnet: port is 23
-        private static readonly int TCP_PORT = 23;
-
         #region Public Properties
         //Observable Interface
         public event PropertyChangedEventHandler PropertyChanged;
@@ -26,13 +24,9 @@ namespace ThreeByte.Network
         #endregion Public Properties
 
         private TcpClient _client;
+        private string _ipAddress;
         public PowerStrip(string ipAddress) {
-            try {
-                _client = new TcpClient();
-                _client.Connect(ipAddress, TCP_PORT);
-            } catch(Exception ex) {
-
-            }
+            _ipAddress = ipAddress;
         }
 
         private bool _disposed = false;
@@ -41,19 +35,14 @@ namespace ThreeByte.Network
                 throw new ObjectDisposedException("PowerStrip");
             }
             _disposed = true;
-            if(_client != null) {
-                if(_client.Client != null) {
-                    _client.Client.Close();
-                }
-                _client.Close();
-            }
-            _client = null;
         }
 
         public void Power(int outlet, bool state) {
-            string message = string.Format("pset {0} {1}\r\n", outlet, (state ? "1" : "0"));
-            byte[] data = Encoding.ASCII.GetBytes(message);
-            _client.GetStream().Write(data, 0, data.Length);
+            WebClient c = new WebClient();
+            c.Credentials = new NetworkCredential("admin", "admin");
+            string commandUri = string.Format("http://{0}/cmd.cgi?$A3 {1} {2}", _ipAddress, outlet, (state ? 1 : 0));
+            string response = c.DownloadString(commandUri);
+            Console.WriteLine("Response: {0}", response);
         }
         
 
