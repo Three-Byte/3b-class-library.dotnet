@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using ThreeByte.Network;
+using System.Net.Sockets;
 
 namespace ThreeByte.Network
 {
@@ -24,10 +25,14 @@ namespace ThreeByte.Network
 
         #endregion Public Properties
 
-        private AsyncNetworkLink _link;
-
+        private TcpClient _client;
         public PowerStrip(string ipAddress) {
-            _link = new AsyncNetworkLink(ipAddress, TCP_PORT);
+            try {
+                _client = new TcpClient();
+                _client.Connect(ipAddress, TCP_PORT);
+            } catch(Exception ex) {
+
+            }
         }
 
         private bool _disposed = false;
@@ -36,12 +41,19 @@ namespace ThreeByte.Network
                 throw new ObjectDisposedException("PowerStrip");
             }
             _disposed = true;
-            _link.Dispose();
+            if(_client != null) {
+                if(_client.Client != null) {
+                    _client.Client.Close();
+                }
+                _client.Close();
+            }
+            _client = null;
         }
 
         public void Power(int outlet, bool state) {
             string message = string.Format("pset {0} {1}\r\n", outlet, (state ? "1" : "0"));
-            _link.SendMessage(Encoding.ASCII.GetBytes(message));
+            byte[] data = Encoding.ASCII.GetBytes(message);
+            _client.GetStream().Write(data, 0, data.Length);
         }
         
 
