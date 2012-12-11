@@ -183,6 +183,8 @@
     <Compile Include="Network\AsyncUdpLink.cs" />
     <Compile Include="Network\ChristieProjector.cs" />
     <Compile Include="Network\ChristieLX700.cs" />
+    <Compile Include="Network\Devices\ChristieDHD670E.cs" />
+    <Compile Include="Network\Devices\Vivitek.cs" />
     <Compile Include="Network\SamsungLCD.cs" />
     <Compile Include="Network\PowerStrip.cs" />
     <Compile Include="Network\KissBox.cs" />

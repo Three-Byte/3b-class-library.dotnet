@@ -353,7 +353,7 @@ namespace ThreeByte.Network
                     SafeConnect();
                 }
                 if(_readResult == asyncResult) {
-                    log.Debug("Clearing Read Result");
+                    //log.Debug("Clearing Read Result");
                     _readResult = null;
                 }
             }
