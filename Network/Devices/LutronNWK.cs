@@ -64,5 +64,12 @@ namespace ThreeByte.Network.Devices
             _link.SendMessage(data);
         }
 
+        public void SetDeviceButton(string device, int button) {
+            //Action 6 - Set Scene number
+            string message = string.Format("#DEVICE, {0}, {1}, 3\r\n", device, button);
+            byte[] data = Encoding.ASCII.GetBytes(message);
+            _link.SendMessage(data);
+        }
+
     }
 }
