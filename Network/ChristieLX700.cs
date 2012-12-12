@@ -66,5 +66,15 @@ namespace ThreeByte.Network
             }
         }
 
+        public void VideoMute(bool state) {
+            if(state) {
+                string message = "C0D\r\n";
+                _link.SendMessage(Encoding.ASCII.GetBytes(message));
+            } else {
+                string message = "C0E\r\n";
+                _link.SendMessage(Encoding.ASCII.GetBytes(message));
+            }
+        }
+
     }
 }
