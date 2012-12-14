@@ -126,12 +126,17 @@ namespace ThreeByte.Serial {
 
         private bool _disposed = false;
 
+        private int DataBits;
+        private Parity Parity;
+        
         #endregion Private Members
 
-        public SerialLink(string comPort, bool enabled = true, int baudRate = 9600) {
+        public SerialLink(string comPort, bool enabled = true, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None) {
             _comPort = comPort;
             _incomingData = new List<byte[]>();
             BaudRate = baudRate;
+            DataBits = dataBits;
+            Parity = parity;
             Enabled = enabled;
         }
 
@@ -180,6 +185,9 @@ namespace ThreeByte.Serial {
                     if(_serialPort == null || !IsOpen) {
                         SafeClose();
                         _serialPort = new SerialPort(COMPort, BaudRate);
+                        _serialPort.Parity = Parity;
+                        _serialPort.DataBits = DataBits;
+                        _serialPort.StopBits = StopBits.One;
                         _serialPort.DataReceived += new SerialDataReceivedEventHandler(_serialPort_DataReceived);
                     }
 

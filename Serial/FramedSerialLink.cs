@@ -9,6 +9,7 @@ using System.Threading;
 using System.IO;
 
 using log4net;
+using System.IO.Ports;
 
 
 namespace ThreeByte.Serial {
@@ -88,12 +89,12 @@ namespace ThreeByte.Serial {
         private MemoryStream _incomingBuffer;
 
 
-        public FramedSerialLink(string comPort, bool enabled = true, int baudRate = 9600) {
+        public FramedSerialLink(string comPort, bool enabled = true, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None) {
 
             _incomingBuffer = new MemoryStream(2048);
             _incomingData = new List<string>();
 
-			_serialLink = new SerialLink(comPort, enabled, baudRate);
+			_serialLink = new SerialLink(comPort, enabled, baudRate, DataBits, parity);
             _serialLink.DataReceived += new EventHandler(_serialLink_DataReceived);
             _serialLink.PropertyChanged += new PropertyChangedEventHandler(_serialLink_PropertyChanged);
 
