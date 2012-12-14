@@ -199,6 +199,7 @@
     <Compile Include="Network\WakeOnLan.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Encryptor.cs" />
+    <Compile Include="Serial\FramedRawSerialLink.cs" />
     <Compile Include="Serial\FramedSerialLink.cs" />
     <Compile Include="Serial\SerialLink.cs" />
     <Compile Include="TaskModel\ConsoleProgressBar.cs" />
