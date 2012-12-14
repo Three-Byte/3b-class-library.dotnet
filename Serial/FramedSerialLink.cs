@@ -94,7 +94,7 @@ namespace ThreeByte.Serial {
             _incomingBuffer = new MemoryStream(2048);
             _incomingData = new List<string>();
 
-			_serialLink = new SerialLink(comPort, enabled, baudRate, DataBits, parity);
+			_serialLink = new SerialLink(comPort, enabled, baudRate, dataBits, parity);
             _serialLink.DataReceived += new EventHandler(_serialLink_DataReceived);
             _serialLink.PropertyChanged += new PropertyChangedEventHandler(_serialLink_PropertyChanged);
 
