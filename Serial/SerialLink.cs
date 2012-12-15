@@ -134,9 +134,9 @@ namespace ThreeByte.Serial {
         public SerialLink(string comPort, bool enabled = true, int baudRate = 9600, int dataBits = 8, Parity parity = Parity.None) {
             _comPort = comPort;
             _incomingData = new List<byte[]>();
-            BaudRate = baudRate;
             DataBits = dataBits;
             Parity = parity;
+            BaudRate = baudRate;
             Enabled = enabled;
         }
 
