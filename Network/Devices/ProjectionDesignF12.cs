@@ -8,9 +8,9 @@ using log4net;
 
 namespace ThreeByte.Network.Devices
 {
-    public class Vivitek : IDisposable, INotifyPropertyChanged
+    public class ProjectionDesignF12 : IDisposable, INotifyPropertyChanged
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(Vivitek));
+        private static readonly ILog log = LogManager.GetLogger(typeof(ProjectionDesignF12));
 
         //Default port is 8000
         private static readonly int TCP_PORT = 8000;
@@ -29,7 +29,7 @@ namespace ThreeByte.Network.Devices
 
         private AsyncNetworkLink _link;
 
-        public Vivitek(string ipAddress) {
+        public ProjectionDesignF12(string ipAddress) {
             _link = new AsyncNetworkLink(ipAddress, TCP_PORT);
             _link.DataReceived += new EventHandler(_link_DataReceived);
         }
@@ -52,7 +52,7 @@ namespace ThreeByte.Network.Devices
         private bool _disposed = false;
         public void Dispose() {
             if(_disposed) {
-                throw new ObjectDisposedException("Vivitek");
+                throw new ObjectDisposedException("Projection Design F12");
             }
             _disposed = true;
             _link.DataReceived -= _link_DataReceived;
@@ -60,12 +60,7 @@ namespace ThreeByte.Network.Devices
         }
 
         public void Power(bool state){
-            byte[] message;
-            if (state) {
-                message = new byte[] { 0x7E, 0x50, 0x4E, 0x0D };
-            } else {
-                message = new byte[] { 0x7E, 0x50, 0x46, 0x0D };
-            }
+            byte[] message = Encoding.ASCII.GetBytes(string.Format(":POWR{0}\r\n", state ? 1 : 0));
             
             _link.SendMessage(message);
         }
