@@ -6,11 +6,14 @@ using System.ComponentModel;
 using ThreeByte.Network;
 using System.Net.Sockets;
 using System.Net;
+using log4net;
 
 namespace ThreeByte.Network
 {
     public class PowerStrip : IDisposable, INotifyPropertyChanged
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(PowerStrip));
+
         #region Public Properties
         //Observable Interface
         public event PropertyChangedEventHandler PropertyChanged;
@@ -38,11 +41,15 @@ namespace ThreeByte.Network
         }
 
         public void Power(int outlet, bool state) {
-            WebClient c = new WebClient();
-            c.Credentials = new NetworkCredential("admin", "admin");
-            string commandUri = string.Format("http://{0}/cmd.cgi?$A3 {1} {2}", _ipAddress, outlet, (state ? 1 : 0));
-            string response = c.DownloadString(commandUri);
-            Console.WriteLine("Response: {0}", response);
+            try {
+                WebClient c = new WebClient();
+                c.Credentials = new NetworkCredential("admin", "admin");
+                string commandUri = string.Format("http://{0}/cmd.cgi?$A3 {1} {2}", _ipAddress, outlet, (state ? 1 : 0));
+                string response = c.DownloadString(commandUri);
+                log.DebugFormat("Response: {0}", response);
+            } catch(Exception ex) {
+                log.Error("Error setting power state", ex);
+            }
         }
         
 
