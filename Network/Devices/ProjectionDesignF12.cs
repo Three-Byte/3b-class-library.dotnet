@@ -12,8 +12,8 @@ namespace ThreeByte.Network.Devices
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ProjectionDesignF12));
 
-        //Default port is 8000
-        private static readonly int TCP_PORT = 8000;
+        //Default port is 1025
+        private static readonly int TCP_PORT = 1025;
 
         #region Public Properties
         //Observable Interface
@@ -61,6 +61,7 @@ namespace ThreeByte.Network.Devices
 
         public void Power(bool state){
             byte[] message = Encoding.ASCII.GetBytes(string.Format(":POWR{0}\r\n", state ? 1 : 0));
+            
             
             _link.SendMessage(message);
         }
