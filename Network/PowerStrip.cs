@@ -26,7 +26,6 @@ namespace ThreeByte.Network
 
         #endregion Public Properties
 
-        private TcpClient _client;
         private string _ipAddress;
         public PowerStrip(string ipAddress) {
             _ipAddress = ipAddress;
