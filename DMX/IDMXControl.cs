@@ -10,5 +10,6 @@ namespace ThreeByte.DMX
         void SetAll(byte val);
         void SetValues(Dictionary<int, byte> values);
         void SetValues(Dictionary<int, byte> values, int startChannel);
+        void Dispose();
     }
 }
