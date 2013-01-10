@@ -5,9 +5,11 @@ using System.Text;
 using System.ComponentModel;
 using ThreeByte.Network;
 using log4net;
+using System.Threading;
 
 namespace ThreeByte.Network.Devices
 {
+    
     public class SonyVisca : IDisposable, INotifyPropertyChanged
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(ExtronMAV));
@@ -60,6 +62,69 @@ namespace ThreeByte.Network.Devices
             byte[] data = new byte[] { 0x81, 0x01, 0x04, 0x3F, 0x02, (byte)(preset - 1), 0xFF };
             _link.SendMessage(data);
 
+        }
+
+        public void SetPreset(int preset) {
+            byte[] data = new byte[] { 0x81, 0x01, 0x04, 0x3F, 0x01, (byte)(preset - 1), 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void Home() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x04, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void Reset() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x05, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void MoveUp() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x01, 0x03, 0x03, 0x03, 0x01, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void MoveDown() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x01, 0x03, 0x03, 0x03, 0x02, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void MoveLeft() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x01, 0x03, 0x03, 0x01, 0x03, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void MoveRight() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x01, 0x03, 0x03, 0x02, 0x03, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void Stop() {
+            byte[] data = new byte[] { 0x81, 0x01, 0x06, 0x01, 0x18, 0x18, 0x03, 0x03, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void Zoom(bool zoomIn) {
+            byte[] data = new byte[] { 0x81, 0x01, 0x04, 0x07, (byte)(zoomIn ? 0x24 : 0x34), 0xFF };
+            _link.SendMessage(data);
+            Thread.Sleep(100);
+            //Send stop command after a certain interval
+            data = new byte[] { 0x81, 0x01, 0x04, 0x07, 0x00, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void Focus(bool focusIn) {
+            byte[] data = new byte[] { 0x81, 0x01, 0x04, 0x08, (byte)(focusIn ? 0x24 : 0x34), 0xFF };
+            _link.SendMessage(data);
+            Thread.Sleep(100);
+            //Send stop command after a certain interval
+            data = new byte[] { 0x81, 0x01, 0x04, 0x08, 0x00, 0xFF };
+            _link.SendMessage(data);
+        }
+
+        public void AutoFocus(bool auto) {
+            byte[] data = new byte[] { 0x81, 0x01, 0x04, 0x38, (byte)(auto ? 0x02 : 0x03), 0xFF };
+            _link.SendMessage(data);
         }
        
     }

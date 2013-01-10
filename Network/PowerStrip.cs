@@ -45,9 +45,9 @@ namespace ThreeByte.Network
                 c.Credentials = new NetworkCredential("admin", "admin");
                 string commandUri = string.Format("http://{0}/cmd.cgi?$A3 {1} {2}", _ipAddress, outlet, (state ? 1 : 0));
                 string response = c.DownloadString(commandUri);
-                log.DebugFormat("Response: {0}", response);
+                //log.DebugFormat("Response: {0}", response);
             } catch(Exception ex) {
-                log.Error("Error setting power state", ex);
+                log.Error(string.Format("Error setting power state: {0} Outlet {1} [{2}]", _ipAddress, outlet, state), ex);
             }
         }
         

@@ -32,7 +32,7 @@ namespace ThreeByte.Network.Devices
         }
 
         void _link_DataReceived(object sender, EventArgs e) {
-            while(_link.HasData) {
+            while(!_disposed && _link.HasData) {
                 byte[] data = _link.GetMessage();
                 log.InfoFormat("Data Received: {0}", Encoding.ASCII.GetString(data));
             }
