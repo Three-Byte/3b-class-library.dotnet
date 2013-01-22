@@ -22,5 +22,10 @@ namespace ThreeByte.Network
             byte[] cmdBytes = Encoding.ASCII.GetBytes("SHUTDOWN\r\n");
             _sender.Send(cmdBytes, cmdBytes.Length, _target);
         }
+
+        public void Restart() {
+            byte[] cmdBytes = Encoding.ASCII.GetBytes("RESTART\r\n");
+            _sender.Send(cmdBytes, cmdBytes.Length, _target);
+        }
     }
 }
