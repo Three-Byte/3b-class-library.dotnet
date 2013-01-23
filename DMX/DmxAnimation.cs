@@ -25,6 +25,7 @@ namespace ThreeByte.DMX {
             set { SetValue(ToProperty, value); }
         }
 
+        public static bool RandomizeOutput = false;
 
         //Allocated once to prevent memory allocation on each calculation
         Dictionary<int, int> returnValue1 = new Dictionary<int, int>();
@@ -37,10 +38,31 @@ namespace ThreeByte.DMX {
             channelToGroupIdx.Clear();
             groupIdxToChannelGroup.Clear();
             foreach(int groupIdx in value.Keys) {
-                foreach(int channel in value[groupIdx]) {
+                buildRandomizer(value[groupIdx]);
+                foreach (int channel in value[groupIdx]) {
                     channelToGroupIdx[channel] = groupIdx;
                 }
                 groupIdxToChannelGroup[groupIdx] = new GroupCounter() { GroupSize = value[groupIdx].Count, SeenSoFar = 0 };
+            }
+        }
+
+        static Dictionary<int, int> randomizer = new Dictionary<int, int>();
+
+        private void buildRandomizer(List<int> list) {
+            List<int> orig = new List<int>();
+            orig.AddRange(list);
+            Random rng = new Random(Seed: 1);
+
+            int n = list.Count;
+            while (n > 1) {
+                n--;
+                int k = rng.Next(n + 1);
+                int value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+            for (int i = 0; i < list.Count(); i++) {
+                randomizer[orig[i]] = list[i];
             }
         }
 
@@ -115,7 +137,11 @@ namespace ThreeByte.DMX {
                 }
 
                 //This handles the case of a channel with a fromValue but not a toValue
-                returnValue[c] = newValue;
+                int idx = c;
+                if (randomizer.ContainsKey(c) && RandomizeOutput) {
+                    idx = randomizer[c];
+                } 
+                returnValue[idx] = newValue;
                 channelsSet.Add(c);
             }
 
@@ -146,8 +172,7 @@ namespace ThreeByte.DMX {
                 }
                 channelsSet.Add(c);
             }
-
-            return returnValue;
+                return returnValue;
         }
 
         private Dictionary<int, int> noTemporalOffest(Dictionary<int, int> defaultOriginValue,
