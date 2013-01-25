@@ -38,10 +38,10 @@ namespace ThreeByte.Network.Devices
 
         private bool[] _idsToMonitor = new bool[byte.MaxValue + 1];
 
-        private void SetIDsToMonitor(params byte[] ids) {
+        public void SetIDsToMonitor(params byte[] ids) {
             HashSet<byte> idSet = new HashSet<byte>(ids);
-            for(byte i = 0; i < _idsToMonitor.Length; ++i) {
-                _idsToMonitor[i] = idSet.Contains(i);
+            for(int i = 0; i < _idsToMonitor.Length; ++i) {
+                _idsToMonitor[i] = idSet.Contains((byte)i);
             }
         }
 
