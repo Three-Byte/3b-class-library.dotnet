@@ -92,11 +92,12 @@ namespace ThreeByte.Network
        
         private List<string> _incomingData;
         private MemoryStream _incomingBuffer;
-
+        private MemoryStream _footerCache;
 
         public FramedNetworkLink(string address, int port, bool enabled = true) {
             
             _incomingBuffer = new MemoryStream(2048);
+            _footerCache = new MemoryStream(2048);
             _incomingData = new List<string>();
 
             _networkLink = new AsyncNetworkLink(address, port, enabled);
@@ -159,11 +160,18 @@ namespace ThreeByte.Network
                         } else if(_headerPos == header.Length - 1 && buffer[i] == header[_headerPos]) {
                             _headerPos = 0;
                             _footerPos = 0;
+                            //Dump the footerCache back into the stream
+                            if(_footerCache.Position > 0) {
+                                _incomingBuffer.Write(_footerCache.GetBuffer(), 0, (int)_footerCache.Position);
+                            }
+                            _footerCache.Position = 0;
                             _incomingBuffer.Position = 0; //Reset to the beginning
                         } else if(_footerPos < footer.Length - 1 && buffer[i] == footer[_footerPos]) {
                             _footerPos++;
+                            _footerCache.WriteByte(buffer[i]);
                         } else if(_footerPos == footer.Length - 1 && buffer[i] == footer[_footerPos]) {
                             _footerPos = 0;  //Reset Footer
+                            _footerCache.Position = 0;
 
                             string newMessage = Encoding.UTF8.GetString(_incomingBuffer.GetBuffer(), 0, (int)_incomingBuffer.Position);
                             if(newMessage.Trim() != string.Empty) {
@@ -181,6 +189,12 @@ namespace ThreeByte.Network
                             _incomingBuffer.Position = 0;
                         } else {
                             _headerPos = 0;
+                            _footerPos = 0;
+                            //Dump the footerCache back into the stream
+                            if(_footerCache.Position > 0) {
+                                _incomingBuffer.Write(_footerCache.GetBuffer(), 0, (int)_footerCache.Position);
+                            }
+                            _footerCache.Position = 0;
                             _incomingBuffer.WriteByte(buffer[i]);
                         }
                     }
