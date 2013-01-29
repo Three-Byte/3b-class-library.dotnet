@@ -15,7 +15,7 @@ namespace ThreeByte.DMX
     /// </summary>
     public class VariableDMXControl : INotifyPropertyChanged, IDisposable, IDMXControl
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(DMXControl));
+        private static readonly ILog log = LogManager.GetLogger(typeof(VariableDMXControl));
 
         //Declarations
         private const byte SEND_DMX_TX_MODE = 6;
@@ -23,8 +23,8 @@ namespace ThreeByte.DMX
         private const byte DMX_END_CODE = 0xE7;
         private const byte DMX_HEADER_LENGTH = 5;
 
-        private SerialLink serialLink;
-        private byte[] _dmxValues;
+        protected SerialLink serialLink;
+        protected byte[] _dmxValues;
 
         public string COMPort {
             get { return serialLink.COMPort; }
@@ -49,7 +49,7 @@ namespace ThreeByte.DMX
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-        private void NotifyPropertyChanged(string propertyName) {
+        protected void NotifyPropertyChanged(string propertyName) {
             if(PropertyChanged != null) {
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
@@ -136,7 +136,7 @@ namespace ThreeByte.DMX
         }
 
         private bool _wasOpen = false;
-        private void SendDMXData(byte[] data) {
+        protected virtual void SendDMXData(byte[] data) {
             if(!Enabled) {
                 return;
             }
