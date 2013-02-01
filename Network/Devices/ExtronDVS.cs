@@ -28,8 +28,8 @@ namespace ThreeByte.Network.Devices
 
         private AsyncNetworkLink _link;
 
-        public ExtronDVS(string ipAddress) {
-            _link = new AsyncNetworkLink(ipAddress, TCP_PORT);
+        public ExtronDVS(string ipAddress, int port = 23) {
+            _link = new AsyncNetworkLink(ipAddress, port);
             _link.DataReceived += new EventHandler(_link_DataReceived);
         }
 
