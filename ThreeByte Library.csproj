@@ -188,6 +188,7 @@
     <Compile Include="Network\ChristieProjector.cs" />
     <Compile Include="Network\ChristieLX700.cs" />
     <Compile Include="Network\Devices\ChristieDHD670E.cs" />
+    <Compile Include="Network\Devices\WatchoutDisplay.cs" />
     <Compile Include="Network\Devices\NECMonitor.cs" />
     <Compile Include="Network\Devices\SonyVisca.cs" />
     <Compile Include="Network\Devices\ExtronDVS.cs" />
@@ -196,6 +197,7 @@
     <Compile Include="Network\Devices\LutronNWK.cs" />
     <Compile Include="Network\Devices\SoundwebFader.cs" />
     <Compile Include="Network\Devices\Vivitek.cs" />
+    <Compile Include="Network\Devices\WatchoutController.cs" />
     <Compile Include="Network\SamsungLCD.cs" />
     <Compile Include="Network\PowerStrip.cs" />
     <Compile Include="Network\KissBox.cs" />
