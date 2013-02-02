@@ -32,8 +32,18 @@ namespace ThreeByte.Network.Devices
 
         void _link_DataReceived(object sender, EventArgs e) {
             while(_link.HasData) {
-
+                byte[] data = _link.GetData();
+                Console.WriteLine("Response: {0}", printBytes(data));
+                Console.WriteLine("String: {0}", Encoding.ASCII.GetString(data));
             }
+        }
+
+        private string printBytes(byte[] data) {
+            StringBuilder sb = new StringBuilder();
+            foreach(byte b in data) {
+                sb.AppendFormat("{0:X2} ", b);
+            }
+            return sb.ToString();
         }
 
         private bool[] _idsToMonitor = new bool[byte.MaxValue + 1];
@@ -80,9 +90,9 @@ namespace ThreeByte.Network.Devices
         }
 
         public void PowerOn() {
-            for(byte i = 0; i < _idsToMonitor.Length; ++i) {
+            for(int i = 0; i < _idsToMonitor.Length; ++i) {
                 if(_idsToMonitor[i]) {
-                    PowerOn(i);
+                    PowerOn((byte)i);
                 }
             }
         }
@@ -92,9 +102,9 @@ namespace ThreeByte.Network.Devices
         }
 
         public void PowerOff() {
-            for(byte i = 0; i < _idsToMonitor.Length; ++i) {
+            for(int i = 0; i < _idsToMonitor.Length; ++i) {
                 if(_idsToMonitor[i]) {
-                    PowerOff(i);
+                    PowerOff((byte)i);
                 }
             }
         }
@@ -102,6 +112,20 @@ namespace ThreeByte.Network.Devices
         public void PowerOff(byte id) {
             _link.SendData(PowerOffMessage(id));
         }
+
+        public void QueryPower(byte id){
+            _link.SendData(QueryPowerMessage(id));
+        }
+
+        public void QueryPower() {
+            for(int i = 0; i < _idsToMonitor.Length; ++i) {
+                if(_idsToMonitor[i]) {
+                    QueryPower((byte)i);
+                }
+            }
+
+        }
+
 
         private static byte CalculateBlockCheckCode(byte[] message) {
             return CalculateBlockCheckCode(message, 0, message.Length - 1);
