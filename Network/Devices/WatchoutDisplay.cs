@@ -195,17 +195,28 @@ namespace ThreeByte.Network.Devices
         }
 
         public void Play(string timeline = null) {
-            string message = string.Format("run{0}", timeline == null ? string.Empty : " " + timeline);
+            string message = "run";
+            if(timeline != null) {
+                message += string.Format(" \"{0}\"", timeline);
+            }
             _netLink.SendMessage(message);
         }
 
         public void Stop(string timeline = null) {
-            string message = string.Format("halt{0}", timeline == null ? string.Empty : " " + timeline);
+            string message = "halt";
+            if(timeline != null) {
+                message += string.Format(" \"{0}\"", timeline);
+            }
             _netLink.SendMessage(message);
         }
 
         public void Kill(string timeline) {
             string message = string.Format("kill {0}", timeline);
+            _netLink.SendMessage(message);
+        }
+
+        public void Reset() {
+            string message = "reset";
             _netLink.SendMessage(message);
         }
 
@@ -215,7 +226,7 @@ namespace ThreeByte.Network.Devices
         }
 
         public void Load(string show) {
-            string message = string.Format("load {0}", show);
+            string message = string.Format("load \"{0}\"", show);
             _netLink.SendMessage(message);
         }
 

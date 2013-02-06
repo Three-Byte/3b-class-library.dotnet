@@ -24,7 +24,8 @@ namespace ThreeByte.Network.Devices
 
         #endregion Public Properties
 
-        private static readonly int TCP_PORT = 23;
+        //Default port for network enabled Extron devices
+        //private static readonly int TCP_PORT = 23;
 
         private AsyncNetworkLink _link;
 
