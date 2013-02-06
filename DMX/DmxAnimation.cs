@@ -26,6 +26,7 @@ namespace ThreeByte.DMX {
         }
 
         public static bool RandomizeOutput = false;
+        public static int BitDepthReduction = 0;
 
         //Allocated once to prevent memory allocation on each calculation
         Dictionary<int, int> returnValue1 = new Dictionary<int, int>();
@@ -115,12 +116,12 @@ namespace ThreeByte.DMX {
                 int newValue = fromValues[c];
                 if(toValues.ContainsKey(c) && channelToGroupIdx.ContainsKey(c) && toValues[c] != newValue) {
                     //This handles the case of a channel with a toValue and a fromValue
-                    int toValue = toValues[c];
-
+                    double toValue = toValues[c] >> BitDepthReduction;
+                    double fromValue = fromValues[c] >> BitDepthReduction;
                     int groupIdx = channelToGroupIdx[c];
                     //UnroundedNewVals is rounded to three decimal places to handle the problem of numerical instability 
                     //resulting in numbers like .0000001 which gets blown up in the Math.Ceiling call
-                    double unroundedNewVal = Math.Round(((1.0 - progress) * fromValues[c]) + (progress * toValues[c]), 3);
+                    double unroundedNewVal = Math.Round(((1.0 - progress) * fromValue) + (progress * toValue), 3);
 
                     double roundedNewVal = Math.Floor(unroundedNewVal);
 
@@ -140,8 +141,8 @@ namespace ThreeByte.DMX {
                 int idx = c;
                 if (randomizer.ContainsKey(c) && RandomizeOutput) {
                     idx = randomizer[c];
-                } 
-                returnValue[idx] = newValue;
+                }
+                returnValue[idx] = newValue << BitDepthReduction;
                 channelsSet.Add(c);
             }
 
@@ -152,19 +153,19 @@ namespace ThreeByte.DMX {
                     }
                     //This handles the case of a toValue without a fromValue
 
-                    int toValue = toValues[c];
+                    double toValue = toValues[c] >> BitDepthReduction;
                     int groupIdx = channelToGroupIdx[c];
 
-                    double unroundedNewVal = Math.Round(progress * toValues[c], 3);
+                    double unroundedNewVal = Math.Round(progress * toValue, 3);
 
                     double roundedNewVal = Math.Floor(unroundedNewVal);
 
                     double decimalComponent = unroundedNewVal - roundedNewVal;
                     double threshold = groupIdxToChannelGroup[groupIdx].SeenSoFar++ / groupIdxToChannelGroup[groupIdx].GroupSize;
                     if(decimalComponent > threshold) {
-                        returnValue[c] = (int)Math.Ceiling(unroundedNewVal);
+                        returnValue[c] = (int)Math.Ceiling(unroundedNewVal) << BitDepthReduction;
                     } else {
-                        returnValue[c] = (int)roundedNewVal;
+                        returnValue[c] = (int)(roundedNewVal) << BitDepthReduction;
                     }
                     if(returnValue[c] > 65535) {
                         returnValue[c] = 65535;
@@ -172,7 +173,7 @@ namespace ThreeByte.DMX {
                 }
                 channelsSet.Add(c);
             }
-                return returnValue;
+            return returnValue;
         }
 
         private Dictionary<int, int> noTemporalOffest(Dictionary<int, int> defaultOriginValue,
