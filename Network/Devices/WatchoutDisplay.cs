@@ -81,6 +81,17 @@ namespace ThreeByte.Network.Devices
             }
         }
 
+        private string _lastError;
+        public string LastError {
+            get {
+                return _lastError;
+            }
+            private set {
+                _lastError = value;
+                NotifyPropertyChanged("LastError");
+            }
+        }
+
         private string _currentShow;
         public string CurrentShow {
             get {
@@ -160,6 +171,7 @@ namespace ThreeByte.Network.Devices
 
             Regex errorPattern = new Regex(@"Error (\d+) (\d+) ""(.*)""");
             if(errorPattern.IsMatch(message)) {
+                LastError = message;
                 Match m = errorPattern.Match(message);
                 if(m.Groups[3].Value.StartsWith("Not authorized")) {
                     Authenticate();
