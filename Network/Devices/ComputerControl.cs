@@ -29,8 +29,9 @@ namespace ThreeByte.Network.Devices {
             }
         }
 
-        private static readonly TimeSpan PING_INTERVAL = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan TIMEOUT_INTERVAL = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan PING_INTERVAL = TimeSpan.FromSeconds(2);
+        private static readonly TimeSpan NEVER = TimeSpan.FromMilliseconds(-1);
+        private static readonly TimeSpan PING_TIMEOUT = TimeSpan.FromSeconds(10);
 
         private AsyncUdpLink _sender;
         private WakeOnLan _wakeOnLan;
@@ -41,34 +42,31 @@ namespace ThreeByte.Network.Devices {
             _sender = new AsyncUdpLink(host, 0);
             _sender.DataReceived += _sender_DataReceived;
             _wakeOnLan = new WakeOnLan(macAddress);
-            pollTimer = new Timer(timerElapsed);
-            pollTimer.Change(PING_INTERVAL, PING_INTERVAL);
-            timeSinceLastPong = new Stopwatch();
-            timeSinceLastPong.Start();
+            _pingTimer = new Timer(timerCallback);
+            _pingTimer.Change(PING_INTERVAL, NEVER);
         }
 
         private string host = null;
-        private Timer pollTimer;
-        private Stopwatch timeSinceLastPong;
+        private Timer _pingTimer;
+        private DateTime _lastAckTimestamp = DateTime.Now;
 
         //Currently we are pinging on a 5 second timer and if 10 seconds go by without a response
         //we set status to offline
-        private void timerElapsed(object state) {
+        private void timerCallback(object state) {
             Ping();
-            if(timeSinceLastPong.Elapsed > TIMEOUT_INTERVAL) {
+            if(DateTime.Now > _lastAckTimestamp + PING_TIMEOUT) {
                 Online = false;
             } else {
                 Online = true;
             }
+            _pingTimer.Change(PING_INTERVAL, NEVER);
         }
 
         private void _sender_DataReceived(object sender, EventArgs e) {
-
             while(_sender.HasData) {
                 string response = Encoding.ASCII.GetString(_sender.GetMessage());
                 if(response.Trim() == "PONG") {
                     Online = true;
-                    timeSinceLastPong.Reset();
                 }
             }            
         }
@@ -92,6 +90,7 @@ namespace ThreeByte.Network.Devices {
             PingReply pingReply = ping.Send(host);
             if(pingReply.Status == IPStatus.Success) {
                 Online = true;
+                _lastAckTimestamp = DateTime.Now;
             } else {
                 Online = false;
             }
