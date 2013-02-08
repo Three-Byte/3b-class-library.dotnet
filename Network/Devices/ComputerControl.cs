@@ -11,8 +11,6 @@ using System.Threading;
 
 namespace ThreeByte.Network.Devices {
     public class ComputerControl : INotifyPropertyChanged {
-        
-        
         public string Host { get; private set; }
         public string MacAddress { get; private set; }
 
@@ -86,13 +84,17 @@ namespace ThreeByte.Network.Devices {
         }
 
         public void Ping() {
-            System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
-            PingReply pingReply = ping.Send(host);
-            if(pingReply.Status == IPStatus.Success) {
-                Online = true;
-                _lastAckTimestamp = DateTime.Now;
-            } else {
-                Online = false;
+            try {
+                System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
+                PingReply pingReply = ping.Send(host);
+                if(pingReply.Status == IPStatus.Success) {
+                    Online = true;
+                    _lastAckTimestamp = DateTime.Now;
+                } else {
+                    Online = false;
+                }
+            } catch (Exception ex){
+                //Log this exception here.
             }
         }
 
