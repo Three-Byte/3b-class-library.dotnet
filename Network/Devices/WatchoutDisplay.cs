@@ -211,7 +211,7 @@ namespace ThreeByte.Network.Devices
         }
 
         public void Kill(string timeline) {
-            string message = string.Format("kill {0}", timeline);
+            string message = string.Format("kill \"{0}\"", timeline);
             _netLink.SendMessage(message);
         }
 
