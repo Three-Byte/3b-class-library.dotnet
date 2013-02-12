@@ -32,18 +32,9 @@ namespace ThreeByte.DMX {
             set { SetValue(TargetTimeProperty, value); }
         }
 
-        public event EventHandler<LoopCueEventArgs> LoopCue;
-
-        private void RaiseLoopCue() {
-            if(LoopCue != null) {
-                LoopCue(this, new LoopCueEventArgs(TargetTime));
-            }
-        }
-
         protected override bool GetCurrentValueCore(bool? defaultOriginValue,
                                                     bool? defaultDestinationValue,
                                                     AnimationClock animationClock) {
-            RaiseLoopCue();
             return true;
         }
 
