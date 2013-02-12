@@ -25,9 +25,25 @@ namespace ThreeByte.DMX {
             set { SetValue(ToProperty, value); }
         }
 
+        public static readonly DependencyProperty TargetTimeProperty = DependencyProperty.Register("TargetTime", typeof(TimeSpan), typeof(LoopPointAnimation));
+
+        public TimeSpan TargetTime {
+            get { return (TimeSpan)GetValue(TargetTimeProperty); }
+            set { SetValue(TargetTimeProperty, value); }
+        }
+
+        public event EventHandler<LoopCueEventArgs> LoopCue;
+
+        private void RaiseLoopCue() {
+            if(LoopCue != null) {
+                LoopCue(this, new LoopCueEventArgs(TargetTime));
+            }
+        }
+
         protected override bool GetCurrentValueCore(bool? defaultOriginValue,
                                                     bool? defaultDestinationValue,
                                                     AnimationClock animationClock) {
+            RaiseLoopCue();
             return true;
         }
 
@@ -38,6 +54,15 @@ namespace ThreeByte.DMX {
             get {
                 return base.IsDestinationDefault;
             }
+        }
+    }
+
+    public class LoopCueEventArgs : EventArgs{
+    public TimeSpan TargetTime { get; private set; }
+        
+        public LoopCueEventArgs(TimeSpan targetTime){
+        TargetTime = targetTime;
+
         }
     }
  
