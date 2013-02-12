@@ -156,6 +156,8 @@
     <Compile Include="Converters\OppositeVisibilityConverter.cs" />
     <Compile Include="Converters\WidthToColumnConverter.cs" />
     <Compile Include="DMX\ChannelSplitter.cs" />
+    <Compile Include="DMX\ControlAnimationBase.cs" />
+    <Compile Include="DMX\LoopPointAnimation.cs" />
     <Compile Include="DMX\VariableStrobeDMXControl.cs" />
     <Compile Include="DMX\DmxAnimation.cs" />
     <Compile Include="DMX\DmxAnimationBase.cs" />
