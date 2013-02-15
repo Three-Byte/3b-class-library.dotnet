@@ -201,6 +201,7 @@
     <Compile Include="Network\Devices\SoundwebFader.cs" />
     <Compile Include="Network\Devices\Vivitek.cs" />
     <Compile Include="Network\Devices\WatchoutController.cs" />
+    <Compile Include="Network\NetworkShutdownManager.cs" />
     <Compile Include="Network\SamsungLCD.cs" />
     <Compile Include="Network\PowerStrip.cs" />
     <Compile Include="Network\KissBox.cs" />
@@ -271,6 +272,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Javascript\polling.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Process\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
