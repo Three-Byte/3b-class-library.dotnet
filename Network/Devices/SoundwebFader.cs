@@ -75,8 +75,7 @@ namespace ThreeByte.Network.Devices
             _networkLink.ReceiveFrame = _networkLink.SendFrame;
             _networkLink.DataReceived += new EventHandler(_networkLink_DataReceived);
 
-            //PollValue(null);
-            _pollingTimer = new Timer(PollValue, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+            _pollingTimer = new Timer(PollValue, null, TimeSpan.FromMilliseconds(1), TimeSpan.FromSeconds(1));
         }
 
         public void Bump(int percent) {
@@ -90,6 +89,7 @@ namespace ThreeByte.Network.Devices
             BitConverter.GetBytes(percent).Reverse().ToArray().CopyTo(bumpMessage, 9);
 
             PackAndSendMessage(bumpMessage);
+            SubscribeLevel(); //Update the fader level right away
         }
 
         public void Mute(bool mute) {
@@ -103,20 +103,34 @@ namespace ThreeByte.Network.Devices
             BitConverter.GetBytes(muteVal).Reverse().ToArray().CopyTo(muteMessage, 9);
 
             PackAndSendMessage(muteMessage);
+            SubscribeMute(); //Update the mute setting right away
         }
 
         private void PollValue(object state)
         {
-            Subscribe();
+            SubscribeLevel();
+            SubscribeMute();
         }
 
 
-        public void Subscribe() {
+        public void SubscribeLevel() {
             byte[] subscribeMessage = new byte[13];
             subscribeMessage[0] = 0x89;  //Subscribe
 
             _header.CopyTo(subscribeMessage, 1);
             SV_MASTER_GAIN.CopyTo(subscribeMessage, 7);
+
+            ZERO_DATA.CopyTo(subscribeMessage, 9);
+
+            PackAndSendMessage(subscribeMessage);
+        }
+
+        public void SubscribeMute() {
+            byte[] subscribeMessage = new byte[13];
+            subscribeMessage[0] = 0x89;  //Subscribe
+
+            _header.CopyTo(subscribeMessage, 1);
+            SV_MUTE.CopyTo(subscribeMessage, 7);
 
             ZERO_DATA.CopyTo(subscribeMessage, 9);
 
@@ -131,7 +145,6 @@ namespace ThreeByte.Network.Devices
             ZERO_DATA.CopyTo(unsubscribeMessage, 9);
 
             PackAndSendMessage(unsubscribeMessage);
-
         }
 
         
@@ -140,14 +153,14 @@ namespace ThreeByte.Network.Devices
             byte[] newData = ReceiveAndUnpackMessage();
             
             try {
-                FaderLevel = GetLevelFromMessage(newData);
+                UpdateFromMessage(newData);
             } catch(Exception ex) {
                 log.Error("Error retrieving level data", ex);
             }
         }
 
         //private static readonly LevelToByteConverter _byteConverter = new LevelToByteConverter();
-        private int GetLevelFromMessage(byte[] data) {
+        private void UpdateFromMessage(byte[] data) {
 
             if(data.Length != 14) {
                 //Not a valid message
@@ -156,10 +169,17 @@ namespace ThreeByte.Network.Devices
             if(data[0] != 0x88){
                 throw new ArgumentException("data", "Level response must have id 0x88 not " + data[0]);
             }
-            byte[] levelBytes = new byte[4];
-            Array.Copy(data, 9, levelBytes, 0, 4);
-            //return (byte)_byteConverter.ConvertBack(levelBytes, null, null, null);
-            return BitConverter.ToInt32(levelBytes.Reverse().ToArray(), 0);
+            if(data[7] == SV_MASTER_GAIN[0] && data[8] == SV_MASTER_GAIN[1]) {
+                //Parse this as a level
+                byte[] levelBytes = new byte[4];
+                Array.Copy(data, 9, levelBytes, 0, 4);
+                FaderLevel = BitConverter.ToInt32(levelBytes.Reverse().ToArray(), 0);
+            } else if(data[7] == SV_MUTE[0] && data[8] == SV_MUTE[1]) {
+                //Parse this as a mute indicator
+                byte[] levelBytes = new byte[4];
+                Array.Copy(data, 9, levelBytes, 0, 4);
+                IsMuted = BitConverter.ToBoolean(levelBytes.Reverse().ToArray(), 0);
+            }
         }
 
 
@@ -251,6 +271,15 @@ namespace ThreeByte.Network.Devices
             private set {
                 _faderLevel = value;
                 NotifyPropertyChanged("FaderLevel");
+            }
+        }
+
+        private bool _isMuted;
+        public bool IsMuted {
+            get { return _isMuted; }
+            private set {
+                _isMuted = value;
+                NotifyPropertyChanged("IsMuted");
             }
         }
 
