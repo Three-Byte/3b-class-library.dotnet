@@ -1,0 +1,187 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using log4net;
+
+namespace ThreeByte.App
+{
+    public class ProcessMonitor : IDisposable
+    {
+        private static readonly ILog log = LogManager.GetLogger(typeof(ProcessMonitor));
+
+        public string ProcessName { get; private set; }
+        public string ExecutionString { get; private set; }
+
+        public int MaxResourceSnapshots { get; set; }
+        public TimeSpan ResourceSnapshotInterval { get; set; }
+
+
+        public event EventHandler<ProcessEventArgs> ProcessEvent;
+
+        private void RaiseProcessEvent(string message) {
+            log.DebugFormat("Process Event [{0}]", message);
+            if(ProcessEvent != null) {
+                ProcessEvent(this, new ProcessEventArgs(message));
+            }
+        }
+
+
+        public event EventHandler ProcessExited;
+
+        private void RaiseProcessExited() {
+            if(ProcessExited != null) {
+                ProcessExited(this, EventArgs.Empty);
+            }
+        }
+
+        public ProcessMonitor(string processName, string executionString) {
+            ProcessName = processName;
+            ExecutionString = executionString;
+
+            //Reasonable defaults
+            MaxResourceSnapshots = 1000;
+            ResourceSnapshotInterval = TimeSpan.FromMinutes(5);
+            ResourceSnapshotInterval = TimeSpan.FromSeconds(5);
+
+            ThreadPool.QueueUserWorkItem(MonitorProcess);
+        }
+
+        private Process _monitoringProcess;
+        private readonly object _monitoringProcessLock = new object();
+        
+        private Queue<ResourceSnapshot> _resourceSnapshots = new Queue<ResourceSnapshot>();
+
+        private void MonitorProcess(object state) {
+
+            try {
+                string executionString = ExecutionString;
+                log.InfoFormat("Launching {0}", executionString);
+                while(!_disposed) {
+                    Process p = new Process();
+                    p.StartInfo = new ProcessStartInfo(executionString); 
+                    p.Start(); 
+                    Thread.Sleep(5000);  //Wait at least 5 seconds before doing anything else to prevent spiraling out of control
+
+                    //Look for process
+                    foreach(Process proc in Process.GetProcesses()) {
+                        if(proc.ProcessName.StartsWith(ProcessName)) {
+                            log.InfoFormat("Found Monitor Process: {0}", proc.ProcessName);
+                            lock(_monitoringProcessLock) {
+                                _monitoringProcess = proc;
+                            }
+                            bool exited = proc.WaitForExit((int)(ResourceSnapshotInterval.TotalMilliseconds));
+                            while(!exited) {
+                                //The process is still running.  This is good, just take a snapshot of it
+                                lock(_monitoringProcessLock) {
+                                    LogResourceSnapshot(_monitoringProcess);
+                                }
+                                exited = proc.WaitForExit((int)(ResourceSnapshotInterval.TotalMilliseconds));
+                            }
+                            
+                            //Once the process exits, then dump some stats and restart it
+                            lock(_monitoringProcessLock) {
+                                //LogResourceSnapshot(_monitoringProcess); //Try to log one more
+                                //RaiseProcessEvent(string.Format("Process exited with code {0}", proc.ExitCode));
+                                //RaiseProcessEvent("Process exited");
+                                RaiseProcessExited();
+                                _monitoringProcess = null;
+                            }
+                        }
+                    }
+                }
+
+            } catch(Exception ex) {
+                RaiseProcessEvent(string.Format("Error with program: {0}", ex.Message));
+            }
+
+        }
+
+
+        private void LogResourceSnapshot(Process proc) {
+            proc.Refresh();
+            ResourceSnapshot snapshot = ResourceSnapshot.FromProcess(proc);
+            log.DebugFormat("Process Snapshot: {0}", snapshot);
+
+            lock(_resourceSnapshots) {
+                _resourceSnapshots.Enqueue(snapshot);
+                while(_resourceSnapshots.Count > MaxResourceSnapshots) {
+                    _resourceSnapshots.Dequeue(); //Just abandon old resource snapshots
+                }
+            }
+        }
+
+        public IEnumerable<ResourceSnapshot> GetSnapshotHistory() {
+            //Make sure that you do not give access to the underlying queue
+            List<ResourceSnapshot> snapshots;
+            lock(_resourceSnapshots) {
+                snapshots = _resourceSnapshots.Reverse().ToList();
+            }
+
+            foreach(ResourceSnapshot s in snapshots) {
+                yield return s;
+            }
+        }
+
+        public void Kill() {
+            if(_disposed) {
+                throw new ObjectDisposedException("ProcessMonitor");
+            }
+            try {
+                lock(_monitoringProcessLock) {
+                    _monitoringProcess.Kill();
+                }
+            } catch(Exception ex) {
+                log.Error("Cannot kill process: {0}", ex);
+            }
+        }
+
+        private bool _disposed = false;
+        public void Dispose() {
+            if(_disposed) {
+                throw new ObjectDisposedException("ProcessMonitor");
+            }
+            _disposed = true;
+            //Will cause the background thread to exit
+        }
+    }
+
+    public class ProcessEventArgs : EventArgs{
+        public string Message { get; private set; }
+
+        public ProcessEventArgs(string message){
+            Message = message;
+        }
+    }
+
+    public class ResourceSnapshot
+    {
+        public DateTime Timestamp { get; private set; }
+        public long PeakPagedMemorySize { get; private set; }
+        public long PeakWorkingSet { get; private set; }
+        public long PrivateMemorySize { get; private set; }
+        public int ThreadCount { get; private set; }
+
+        private ResourceSnapshot() {
+            Timestamp = DateTime.Now;
+        }
+
+        public static ResourceSnapshot FromProcess(Process process) {
+            ResourceSnapshot newSnapshot = new ResourceSnapshot() {
+                PeakPagedMemorySize = process.PeakPagedMemorySize64,
+                PeakWorkingSet = process.PeakWorkingSet64,
+                PrivateMemorySize = process.PrivateMemorySize64,
+                ThreadCount = process.Threads.Count
+
+            };
+            return newSnapshot;
+        }
+
+        public override string ToString() {
+            return string.Format("{0} - PeakPaged: {1} PeakWorking: {2} PrivateMemory: {3} ThreadCount: {4}",
+                Timestamp, PeakPagedMemorySize, PeakWorkingSet, PrivateMemorySize, ThreadCount);
+        }
+    }
+}

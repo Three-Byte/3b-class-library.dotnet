@@ -212,6 +212,7 @@
     <Compile Include="Network\NetworkLink.cs" />
     <Compile Include="Network\ShutdownTrigger.cs" />
     <Compile Include="Network\WakeOnLan.cs" />
+    <Compile Include="App\ProcessMonitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Encryptor.cs" />
     <Compile Include="Serial\FramedRawSerialLink.cs" />
@@ -273,9 +274,7 @@
   <ItemGroup>
     <Content Include="Javascript\polling.js" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Process\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

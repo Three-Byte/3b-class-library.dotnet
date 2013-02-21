@@ -113,6 +113,84 @@ namespace ThreeByte.Network.Devices
                 NotifyPropertyChanged("TimeCode");
             }
         }
+
+        private bool _playing;
+        public bool Playing {
+            get {
+                return _playing;
+            }
+            private set {
+                _playing = value;
+                NotifyPropertyChanged("Playing");
+            }
+        }
+
+        private bool _standby;
+        public bool StandBy {
+            get {
+                return _standby;
+            }
+            private set {
+                _standby = value;
+                NotifyPropertyChanged("StandBy");
+            }
+        }
+
+        private bool _showActive;
+        public bool ShowActive {
+            get {
+                return _showActive;
+            }
+            private set {
+                _showActive = value;
+                NotifyPropertyChanged("ShowActive");
+            }
+        }
+
+        private int _clusterHealth;
+        public int ClusterHealth {
+            get {
+                return _clusterHealth;
+            }
+            private set {
+                _clusterHealth = value;
+                NotifyPropertyChanged("ClusterHealth");
+            }
+        }
+
+        private bool _programmerOnline;
+        public bool ProgrammerOnline {
+            get {
+                return _programmerOnline;
+            }
+            private set {
+                _programmerOnline = value;
+                NotifyPropertyChanged("ProgrammerOnline");
+            }
+        }
+
+        private bool _busy;
+        public bool Busy {
+            get {
+                return _busy;
+            }
+            private set {
+                _busy = value;
+                NotifyPropertyChanged("Busy");
+            }
+        }
+
+        private double _timelineRate;
+        public double TimelineRate {
+            get {
+                return _timelineRate;
+            }
+            private set {
+                _timelineRate = value;
+                NotifyPropertyChanged("TimelineRate");
+            }
+        }
+
         #endregion Public Properties
 
 
@@ -179,7 +257,7 @@ namespace ThreeByte.Network.Devices
                 }
             }
 
-            Regex replyPattern = new Regex(@"Reply ""(\w+)"" (\w+) (\d+) (\w+) (\w+) (\w+) (\d+) (\w+) (\d+) (\w+)");
+            Regex replyPattern = new Regex(@"Reply ""([\w-]+)"" (\w+) (\d+) (\w+) (\w+) (\w+) (\d+) (\w+) ([\d\.]+) (\w+)");
             if(replyPattern.IsMatch(message)) {
                 //Parse the staus reply
 
@@ -188,8 +266,14 @@ namespace ThreeByte.Network.Devices
                 if(m.Success) {
                     //Get the show name and timecode
                     CurrentShow = m.Groups[1].Value;
-
+                    Busy = bool.Parse(m.Groups[2].Value);
+                    ClusterHealth = int.Parse(m.Groups[3].Value);
+                    ShowActive = bool.Parse(m.Groups[5].Value);
+                    ProgrammerOnline = bool.Parse(m.Groups[6].Value);
                     TimeCode = TimeSpan.FromMilliseconds(int.Parse(m.Groups[7].Value));
+                    Playing = bool.Parse(m.Groups[8].Value);
+                    TimelineRate = double.Parse(m.Groups[9].Value);
+                    StandBy = bool.Parse(m.Groups[10].Value);
                 }
             }
         }
