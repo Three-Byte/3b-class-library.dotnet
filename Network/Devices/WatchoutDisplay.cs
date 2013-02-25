@@ -43,6 +43,18 @@ namespace ThreeByte.Network.Devices
         private Timer _statusTimer;
         private DateTime _lastAckTimestamp = DateTime.Now;
 
+        public event EventHandler<ControlCueEventArgs> ControlCue;
+
+        private void RaiseControlCue(string info) {
+            if(ControlCue != null) {
+                try {
+                    ControlCue(this, new ControlCueEventArgs(info));
+                } catch(Exception ex) {
+                    //Don't let consumers bring you down
+                    log.Error("Error executing control cue", ex);
+                }
+            }
+        }
 
         #region Public Properties
         private bool _connected;
@@ -276,6 +288,18 @@ namespace ThreeByte.Network.Devices
                     StandBy = bool.Parse(m.Groups[10].Value);
                 }
             }
+
+            Regex controlCuePattern = new Regex(@"Information "":([\w-\s]+)""");
+            if(controlCuePattern.IsMatch(message)) {
+                Match m = controlCuePattern.Match(message);
+                if(m.Success) {
+                    //Raise Control Cue
+                    RaiseControlCue(m.Groups[1].Value);
+                } else {
+                    log.InfoFormat("Control cue not recognized: {0}", message);
+                }
+
+            }
         }
 
         public void Authenticate() {
@@ -377,6 +401,14 @@ namespace ThreeByte.Network.Devices
                 CurrentConditionalLayers[i] = true;
             }
             UpdateEnabledLayers();
+        }
+    }
+
+    public class ControlCueEventArgs : EventArgs{
+        public string Information { get; private set; }
+
+        public ControlCueEventArgs(string info){
+            Information = info;
         }
     }
 }
