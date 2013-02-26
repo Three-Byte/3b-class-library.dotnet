@@ -17,7 +17,7 @@ namespace ThreeByte.App
 
         public int MaxResourceSnapshots { get; set; }
         public TimeSpan ResourceSnapshotInterval { get; set; }
-
+        public int UnresponsiveIntervalKillCount { get; set; }
 
         public event EventHandler<ProcessEventArgs> ProcessEvent;
 
@@ -45,6 +45,7 @@ namespace ThreeByte.App
             MaxResourceSnapshots = 1000;
             //ResourceSnapshotInterval = TimeSpan.FromMinutes(5);
             ResourceSnapshotInterval = TimeSpan.FromSeconds(5);
+            UnresponsiveIntervalKillCount = 3;
 
             ThreadPool.QueueUserWorkItem(MonitorProcess);
         }
@@ -72,14 +73,21 @@ namespace ThreeByte.App
                             lock(_monitoringProcessLock) {
                                 _monitoringProcess = proc;
                             }
+
+                            ClearSnapshotHistory();
+                            int unresponsiveCount = 0;
                             bool exited = proc.WaitForExit((int)(ResourceSnapshotInterval.TotalMilliseconds));
                             while(!exited) {
                                 //The process is still running.  This is good, just take a snapshot of it
                                 lock(_monitoringProcessLock) {
                                     ResourceSnapshot snapshot = LogResourceSnapshot(_monitoringProcess);
                                     if(snapshot.IsNotResponding) {
-                                        log.WarnFormat("Application is not responding.  Will kill");
-                                        Kill();
+                                        if(++unresponsiveCount >= UnresponsiveIntervalKillCount) {
+                                            log.WarnFormat("Application is not responding.  Will kill.");
+                                            Kill();
+                                        }
+                                    } else {
+                                        unresponsiveCount = 0;
                                     }
                                 }
                                 exited = proc.WaitForExit((int)(ResourceSnapshotInterval.TotalMilliseconds));
@@ -127,6 +135,12 @@ namespace ThreeByte.App
 
             foreach(ResourceSnapshot s in snapshots) {
                 yield return s;
+            }
+        }
+
+        private void ClearSnapshotHistory() {
+            lock(_resourceSnapshots) {
+                _resourceSnapshots.Clear();
             }
         }
 
