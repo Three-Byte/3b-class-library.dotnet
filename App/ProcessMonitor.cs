@@ -43,8 +43,7 @@ namespace ThreeByte.App
 
             //Reasonable defaults
             MaxResourceSnapshots = 1000;
-            //ResourceSnapshotInterval = TimeSpan.FromMinutes(5);
-            ResourceSnapshotInterval = TimeSpan.FromSeconds(5);
+            ResourceSnapshotInterval = TimeSpan.FromMinutes(5);
             UnresponsiveIntervalKillCount = 3;
 
             ThreadPool.QueueUserWorkItem(MonitorProcess);
@@ -95,9 +94,6 @@ namespace ThreeByte.App
                             
                             //Once the process exits, then dump some stats and restart it
                             lock(_monitoringProcessLock) {
-                                //LogResourceSnapshot(_monitoringProcess); //Try to log one more
-                                //RaiseProcessEvent(string.Format("Process exited with code {0}", proc.ExitCode));
-                                //RaiseProcessEvent("Process exited");
                                 RaiseProcessExited();
                                 _monitoringProcess = null;
                             }
