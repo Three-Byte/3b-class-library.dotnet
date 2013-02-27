@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using ThreeByte.Network;
 using log4net;
+using System.Text.RegularExpressions;
 
 namespace ThreeByte.Network.Devices
 {
@@ -37,9 +38,25 @@ namespace ThreeByte.Network.Devices
         void _link_DataReceived(object sender, EventArgs e) {
             while(_link.HasData) {
                 byte[] data = _link.GetMessage();
-                log.InfoFormat("Data Received: {0}", Encoding.ASCII.GetString(data));
+                string message = Encoding.ASCII.GetString(data);
+                log.InfoFormat("Data Received: {0}", message);
+                ParseMessage(message);
             }
         }
+
+        private void ParseMessage(string message) {
+            try {
+                Regex inputPattern = new Regex(@"In(\d+)");
+
+                Match m = inputPattern.Match(message);
+                if(m.Success) {
+                    CurrentInput = int.Parse(m.Groups[1].Value);
+                }
+            } catch(Exception ex) {
+                log.Warn("Error parsing message", ex);
+            }
+        }
+
 
         private string printBytes(byte[] data) {
             StringBuilder sb = new StringBuilder();
@@ -59,6 +76,7 @@ namespace ThreeByte.Network.Devices
             _link.Dispose();
         }
 
+        public int CurrentInput{ get; private set; }
 
         public void Input(int input){
             string message = string.Format("{0}!\r\n", input);
