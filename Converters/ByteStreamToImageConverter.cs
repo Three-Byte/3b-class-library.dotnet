@@ -12,6 +12,15 @@ namespace ThreeByte.Converters
 {
     public class ByteStreamToImageConverter : IValueConverter
     {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="targetType"></param>
+        /// <param name="parameter"></param>
+        /// <param name="culture"></param>
+        /// <returns>A BitmapImage</returns>
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             Binary b = value as Binary;
             if(b == null) {

@@ -46,11 +46,20 @@ namespace ThreeByte.Network.Devices
 
         private void ParseMessage(string message) {
             try {
-                Regex inputPattern = new Regex(@"In(\d+)");
+                {
+                    Regex inputPattern = new Regex(@"In(\d+)");
+                    Match m = inputPattern.Match(message);
+                    if(m.Success) {
+                        CurrentInput = int.Parse(m.Groups[1].Value);
+                    }
+                }
 
-                Match m = inputPattern.Match(message);
-                if(m.Success) {
-                    CurrentInput = int.Parse(m.Groups[1].Value);
+                {
+                    Regex inputPattern = new Regex(@"Vx A(\d+)");
+                    Match m = inputPattern.Match(message);
+                    if(m.Success) {
+                        CurrentInput = int.Parse(m.Groups[1].Value);
+                    }
                 }
             } catch(Exception ex) {
                 log.Warn("Error parsing message", ex);
@@ -80,6 +89,11 @@ namespace ThreeByte.Network.Devices
 
         public void Input(int input){
             string message = string.Format("{0}!\r\n", input);
+            _link.SendMessage(Encoding.ASCII.GetBytes(message));
+        }
+
+        public void Query() {
+            string message = "I\r\n";
             _link.SendMessage(Encoding.ASCII.GetBytes(message));
         }
 

@@ -35,7 +35,7 @@ namespace ThreeByte.Network.Devices
 
         private static readonly TimeSpan NEVER = TimeSpan.FromMilliseconds(-1);
         private static readonly TimeSpan PING_INTERVAL = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan PING_TIMEOUT = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan PING_TIMEOUT = TimeSpan.FromSeconds(11);
 
         private static readonly TimeSpan STATUS_INTERVAL = TimeSpan.FromSeconds(1);
 
@@ -256,6 +256,7 @@ namespace ThreeByte.Network.Devices
             if(string.IsNullOrEmpty(message)) {
                 return;
             }
+            _lastAckTimestamp = DateTime.Now;
             Connected = true;
             LastMessage = message.Replace("\n", string.Empty).Replace("\r", string.Empty);
 
