@@ -89,12 +89,12 @@ namespace ThreeByte.Network
 
 
         //Assume local and remote port should be the same
-        public AsyncUdpLink(string address, int port, bool enabled = true) {
+        public AsyncUdpLink(string address, int remotePort, int localPort = 0, bool enabled = true) {
             Address = address;
-            Port = port;
+            Port = remotePort;
 
             _incomingData = new List<byte[]>();
-            _udpClient = new UdpClient(Port);
+            _udpClient = new UdpClient(localPort); //Typically don't bind to the same port that you send to
             
             Enabled = enabled;  //Default is true
 
