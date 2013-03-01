@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
 using System.Net.NetworkInformation;
-
+using log4net;
 
 namespace ThreeByte.Network
 {
@@ -16,6 +16,9 @@ namespace ThreeByte.Network
     /// </summary>
     public class WakeOnLan : UdpClient
     {
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(WakeOnLan));
+
         private string _macAddress;
 
         /// <summary>
@@ -57,20 +60,21 @@ namespace ThreeByte.Network
             foreach(NetworkInterface i in NetworkInterface.GetAllNetworkInterfaces()) {
                 if(i.OperationalStatus == OperationalStatus.Up) {
                     foreach(UnicastIPAddressInformation ua in i.GetIPProperties().UnicastAddresses) {
-                        Console.WriteLine(ua.Address.AddressFamily);
-                        if(ua.Address.AddressFamily == AddressFamily.InterNetwork && !ua.Address.Equals(IPAddress.Loopback)) {  //IPv4 but not loopback
-                            this.Connect(ua.Address, 10001);
-                            if(this.Active) {
-                                this.Client.SetSocketOption(SocketOptionLevel.Socket,
-                                                          SocketOptionName.Broadcast, 0);
-                            } else {
-                                throw new ArgumentNullException("The UDP Client is not active");
-                            }
-                            this.Send(packet, byteCount);
+                        if(ua.Address.AddressFamily != AddressFamily.InterNetwork
+                            || ua.Address.Equals(IPAddress.Loopback)) {  //IPv4 but not loopback
+                            continue;
                         }
 
+                        try {
+                            this.Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                            this.Client.Bind(new IPEndPoint(ua.Address, 10001));
+                            this.EnableBroadcast = true;
+                            this.Send(packet, byteCount, new IPEndPoint(IPAddress.Broadcast, 10001));
+                            this.Client.Close();
+                        } catch(Exception ex) {
+                            log.Error("Error broadcasting packet", ex);
+                        }
                     }
-
 
                 }
             }
