@@ -5,6 +5,7 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Globalization;
+using System.Net.NetworkInformation;
 
 
 namespace ThreeByte.Network
@@ -29,14 +30,6 @@ namespace ThreeByte.Network
         }
 
         public void Wake() {
-            this.Connect(IPAddress.Broadcast, 10001);
-            if(this.Active) {
-                this.Client.SetSocketOption(SocketOptionLevel.Socket,
-                                          SocketOptionName.Broadcast, 0);
-            } else {
-                throw new ArgumentNullException("The UDP Client is not active");
-            }
-
             int counter = 0;
             //buffer to be send
             byte[] bytes = new byte[1024];   // more than enough :-)
@@ -57,7 +50,30 @@ namespace ThreeByte.Network
             }
 
             //now send wake up packet
-            this.Send(bytes, counter);
+            BroadcastAllAdapters(bytes, counter);
+        }
+
+        private void BroadcastAllAdapters(byte[] packet, int byteCount) {
+            foreach(NetworkInterface i in NetworkInterface.GetAllNetworkInterfaces()) {
+                if(i.OperationalStatus == OperationalStatus.Up) {
+                    foreach(UnicastIPAddressInformation ua in i.GetIPProperties().UnicastAddresses) {
+                        Console.WriteLine(ua.Address.AddressFamily);
+                        if(ua.Address.AddressFamily == AddressFamily.InterNetwork && !ua.Address.Equals(IPAddress.Loopback)) {  //IPv4 but not loopback
+                            this.Connect(ua.Address, 10001);
+                            if(this.Active) {
+                                this.Client.SetSocketOption(SocketOptionLevel.Socket,
+                                                          SocketOptionName.Broadcast, 0);
+                            } else {
+                                throw new ArgumentNullException("The UDP Client is not active");
+                            }
+                            this.Send(packet, byteCount);
+                        }
+
+                    }
+
+
+                }
+            }
         }
 
     }
