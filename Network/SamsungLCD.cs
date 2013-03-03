@@ -5,6 +5,7 @@ using System.Text;
 using System.ComponentModel;
 using ThreeByte.Network;
 using log4net;
+using ThreeByte.Network.Devices;
 
 namespace ThreeByte.Network
 {
@@ -12,7 +13,6 @@ namespace ThreeByte.Network
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(SamsungLCD));
 
-        //Default port is 9812
         private static readonly int TCP_PORT = 1515;
 
         #region Public Properties
@@ -28,10 +28,20 @@ namespace ThreeByte.Network
         #endregion Public Properties
 
         private AsyncNetworkLink _link;
+        private ComputerControl _networkStatus;
 
-        public SamsungLCD(string ipAddress) {
+        public SamsungLCD(string ipAddress, string macAddress) {
             _link = new AsyncNetworkLink(ipAddress, TCP_PORT);
             _link.DataReceived += new EventHandler(_link_DataReceived);
+
+            _networkStatus = new ComputerControl(ipAddress, macAddress);
+            _networkStatus.PropertyChanged += _networkStatus_PropertyChanged;
+        }
+
+        void _networkStatus_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if(e.PropertyName == "Online") {
+                NotifyPropertyChanged("IsPowerOn");
+            }
         }
 
         void _link_DataReceived(object sender, EventArgs e) {
@@ -61,13 +71,24 @@ namespace ThreeByte.Network
 
         public void Power(bool state) {
             if(state) {
-                byte[] message = new byte[] { 0xAA, 0x11, 0xFE, 0x01, 0x01, 0x00 };
-                checksum(message);
-                _link.SendMessage(message);
+                //Explicit messages don't actually work when the monitor is powered off
+                //This isn't documented though
+                //byte[] message = new byte[] { 0xAA, 0x11, 0xFE, 0x01, 0x01, 0x00 };
+                //checksum(message);
+                //_link.SendMessage(message);
+                
+                //Use WakeOnLan instead
+                _networkStatus.Startup();
             } else {
                 byte[] message = new byte[] { 0xAA, 0x11, 0xFE, 0x01, 0x00, 0x00 };
                 checksum(message);
                 _link.SendMessage(message);
+            }
+        }
+
+        public bool IsPowerOn {
+            get {
+                return _networkStatus.Online;
             }
         }
 

@@ -36,7 +36,7 @@ namespace ThreeByte.Network.Devices {
 
         public ComputerControl(string host, string macAddress) {
             this.host = host;
-            //This port = 0 means that the next available poert number will be assigned
+            //This port = 0 means that the next available port number will be assigned
             _sender = new AsyncUdpLink(host, NetworkShutdownManager.UDP_LISTEN_PORT);
             _sender.DataReceived += _sender_DataReceived;
             _wakeOnLan = new WakeOnLan(macAddress);

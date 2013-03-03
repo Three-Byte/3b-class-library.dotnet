@@ -35,8 +35,11 @@ namespace ThreeByte.Network.Devices
                 byte[] data = _link.GetData();
                 Console.WriteLine("Response: {0}", printBytes(data));
                 Console.WriteLine("String: {0}", Encoding.ASCII.GetString(data));
+                ParseResponse(data);
             }
         }
+
+       
 
         private string printBytes(byte[] data) {
             StringBuilder sb = new StringBuilder();
@@ -89,6 +92,18 @@ namespace ThreeByte.Network.Devices
             }
         }
 
+        private bool _isPowerOn;
+        public bool IsPowerOn {
+            get {
+                return _isPowerOn;
+            }
+            set {
+                _isPowerOn = value;
+                NotifyPropertyChanged("IsPowerOn");
+            }
+        }
+
+
         public void PowerOn() {
             for(int i = 0; i < _idsToMonitor.Length; ++i) {
                 if(_idsToMonitor[i]) {
@@ -125,6 +140,41 @@ namespace ThreeByte.Network.Devices
             }
 
         }
+
+        private void ParseResponse(byte[] data) {
+
+            if(data.Length < 4) {
+                return;//Nothing worth inspecting here
+            }
+
+            byte[] dataSub = new byte[data.Length - 4];
+            Array.Copy(data, 3, dataSub, 0, dataSub.Length);
+
+            { //Check power on
+                byte[] onResponse = PowerOnResponse((byte)'*');
+                byte[] onResponseSub = new byte[onResponse.Length - 4];
+                Array.Copy(onResponse, 3, onResponseSub, 0, onResponseSub.Length);
+
+                if(onResponseSub.SequenceEqual(dataSub)) {
+                    IsPowerOn = true;
+                }
+            }
+
+            { //Check power off
+                byte[] offResponse = PowerOffResponse((byte)'*');
+                byte[] offResponseSub = new byte[offResponse.Length - 4];
+                Array.Copy(offResponse, 3, offResponseSub, 0, offResponseSub.Length);
+
+                if(offResponseSub.SequenceEqual(dataSub)) {
+                    IsPowerOn = false;
+                }
+            }
+
+
+        }
+
+
+        
 
 
         private static byte CalculateBlockCheckCode(byte[] message) {
