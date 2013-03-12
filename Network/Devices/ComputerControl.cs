@@ -34,12 +34,15 @@ namespace ThreeByte.Network.Devices {
         private AsyncUdpLink _sender;
         private WakeOnLan _wakeOnLan;
 
-        public ComputerControl(string host, string macAddress) {
+        public ComputerControl(string host, string macAddress, string broadcastWakeAddress = null) {
             this.host = host;
             //This port = 0 means that the next available port number will be assigned
             _sender = new AsyncUdpLink(host, NetworkShutdownManager.UDP_LISTEN_PORT);
             _sender.DataReceived += _sender_DataReceived;
             _wakeOnLan = new WakeOnLan(macAddress);
+            if(!string.IsNullOrWhiteSpace(broadcastWakeAddress)) {
+                _wakeOnLan.BroadcastAddress = IPAddress.Parse(broadcastWakeAddress);
+            }
             _pingTimer = new Timer(timerCallback);
             _pingTimer.Change(PING_INTERVAL, NEVER);
         }

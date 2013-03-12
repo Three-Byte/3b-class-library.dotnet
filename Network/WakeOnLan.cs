@@ -30,6 +30,12 @@ namespace ThreeByte.Network
                 throw new ArgumentNullException("MAC Address must be specified as 12 hex characters");
             }
             _macAddress = MACAddress;
+            BroadcastAddress = IPAddress.Broadcast;
+        }
+
+        public IPAddress BroadcastAddress {
+            get;
+            set;
         }
 
         public void Wake() {
@@ -69,7 +75,7 @@ namespace ThreeByte.Network
                             this.Client = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
                             this.Client.Bind(new IPEndPoint(ua.Address, 10001));
                             this.EnableBroadcast = true;
-                            this.Send(packet, byteCount, new IPEndPoint(IPAddress.Broadcast, 10001));
+                            this.Send(packet, byteCount, new IPEndPoint(BroadcastAddress, 10001));
                             this.Client.Close();
                         } catch(Exception ex) {
                             log.Error("Error broadcasting packet", ex);
