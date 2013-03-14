@@ -131,5 +131,36 @@ namespace ThreeByte.DMX {
             return dmxU;
         }
 
+
+        public void SetToSixteenBitChannelDefault() {
+            int i = this.StartChannel;
+            foreach(LightChannel channel in this.LightChannels.ToList()) {
+                channel.CoarseChannel = i;
+                channel.FineChannel = i + 1;
+                channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                if(i > this.NumberOfChannels - this.StartChannel) {
+                    this.LightChannels.Remove(channel);
+                }
+                i += 2;
+            }
+        }
+
+        public void SetToEightBitChannelDefault() {
+            int i = this.StartChannel;
+            foreach(LightChannel channel in this.LightChannels) {
+                channel.CoarseChannel = i++;
+                channel.FineChannel = 0;
+                channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+            }
+
+            while(i < this.NumberOfChannels + this.StartChannel) {
+                this.LightChannels.Add(new LightChannel() {
+                    CoarseChannel = i,
+                    FineChannel = 0,
+                    Name = string.Format("Channel_{0}_{1}", i++, 0)
+                });
+
+            }
+        }
     }
 }
