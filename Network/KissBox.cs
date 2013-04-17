@@ -34,10 +34,15 @@ namespace ThreeByte.Network
             _link.DataReceived += new EventHandler(_link_DataReceived);
         }
 
+        public event EventHandler<KissBoxEventArgs> KissBoxActivated;
+
         void _link_DataReceived(object sender, EventArgs e) {
             while(_link.HasData) {
                 byte[] data = _link.GetMessage();
                 log.InfoFormat("Data Received: {0}", printBytes(data));
+                if(KissBoxActivated != null) {
+                    KissBoxActivated(this, new KissBoxEventArgs(data[1], data[2], Convert.ToBoolean(data[3])));
+                }
             }
         }
 
@@ -77,6 +82,17 @@ namespace ThreeByte.Network
             //TODO: Implement this
             return false;
         }
+    }
 
+    public class KissBoxEventArgs : EventArgs {
+        public int Slot { get; set; }
+        public int Channel { get; set; }
+        public bool IsOn { get; set; }
+
+        public KissBoxEventArgs(int slot, int channel, bool isOn) {
+            Slot = slot;
+            Channel = channel;
+            IsOn = isOn;
+        }
     }
 }
