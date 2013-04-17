@@ -46,6 +46,12 @@ namespace ThreeByte.Network
             }
         }
 
+        public bool IsConnected {
+            get {
+                return this._link.IsConnected;
+            }
+        }
+
         private string printBytes(byte[] data) {
             StringBuilder sb = new StringBuilder();
             foreach(byte b in data) {
