@@ -205,8 +205,8 @@ namespace ThreeByte.Network.Devices
 
         #endregion Public Properties
 
-
         public WatchoutDisplay(string host) {
+            log.InfoFormat("Initialize Watchout Display: {0}", host);
             MutualExclusionSets = new HashSet<HashSet<int>>();
             MutualExclusionSets.Add(new HashSet<int>(new int[] { 1, 2, 3, 4 }));
             MutualExclusionSets.Add(new HashSet<int>(new int[] { 5, 6, 7, 8 }));
