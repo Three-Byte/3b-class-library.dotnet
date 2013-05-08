@@ -283,5 +283,13 @@ namespace ThreeByte.Network.Devices
             }
         }
 
+        public static int LevelToPercent(int level) {
+            int maxValue = 0;
+            int minValue = -65535;
+            level = Math.Max(level, minValue);
+   
+            return (int)Math.Round(((double)(level - minValue) / (double)(maxValue - minValue)) * 100.0);
+        }
+
     }
 }
