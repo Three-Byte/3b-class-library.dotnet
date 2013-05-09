@@ -199,6 +199,8 @@
     <Compile Include="Network\Devices\BrightSignAudioPlayer.cs" />
     <Compile Include="Network\Devices\ChristieDHD670E.cs" />
     <Compile Include="Network\Devices\ComputerControl.cs" />
+    <Compile Include="Network\Devices\SoundwebBlock.cs" />
+    <Compile Include="Network\Devices\SoundwebPreset.cs" />
     <Compile Include="Network\Devices\WatchoutDisplay.cs" />
     <Compile Include="Network\Devices\NECMonitor.cs" />
     <Compile Include="Network\Devices\SonyVisca.cs" />
