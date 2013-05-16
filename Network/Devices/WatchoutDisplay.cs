@@ -270,7 +270,7 @@ namespace ThreeByte.Network.Devices
                 }
             }
 
-            Regex replyPattern = new Regex(@"Reply ""([\w-]+)"" (\w+) (\d+) (\w+) (\w+) (\w+) (\d+) (\w+) ([\d\.]+) (\w+)");
+            Regex replyPattern = new Regex(@"Reply ""([^""]+)"" (\w+) (\d+) (\w+) (\w+) (\w+) (\d+) (\w+) ([\d\.]+) (\w+)");
             if(replyPattern.IsMatch(message)) {
                 //Parse the staus reply
 
