@@ -252,7 +252,7 @@ namespace ThreeByte.Network.Devices
 
         private void ParseMessage(string message) {
 
-            log.DebugFormat("The message is [{0}]", message);
+            log.DebugFormat("<{0}> [{1}]", Host, message);
             if(string.IsNullOrEmpty(message)) {
                 return;
             }
@@ -270,10 +270,9 @@ namespace ThreeByte.Network.Devices
                 }
             }
 
-            Regex replyPattern = new Regex(@"Reply ""([^""]+)"" (\w+) (\d+) (\w+) (\w+) (\w+) (\d+) (\w+) ([\d\.]+) (\w+)");
+            Regex replyPattern = new Regex(@"Reply ""([^""]*)"" (\w+) (\d+) (\w+) (\w+) (\w+) (\d+) (\w+) ([\d\.]+) (\w+)");
             if(replyPattern.IsMatch(message)) {
                 //Parse the staus reply
-
 
                 Match m = replyPattern.Match(message);
                 if(m.Success) {
