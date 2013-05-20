@@ -17,7 +17,7 @@ namespace ThreeByte.App
 
         public int MaxResourceSnapshots { get; set; }
         public TimeSpan ResourceSnapshotInterval { get; set; }
-        public int UnresponsiveIntervalKillCount { get; set; }
+        public TimeSpan UnresponsiveTimeout { get; set; }
 
         public event EventHandler<ProcessEventArgs> ProcessEvent;
 
@@ -44,14 +44,14 @@ namespace ThreeByte.App
             //Reasonable defaults
             MaxResourceSnapshots = 1000;
             ResourceSnapshotInterval = TimeSpan.FromMinutes(5);
-            UnresponsiveIntervalKillCount = 3;
+            UnresponsiveTimeout = TimeSpan.FromMinutes(1);
 
             ThreadPool.QueueUserWorkItem(MonitorProcess);
         }
 
         private Process _monitoringProcess;
         private readonly object _monitoringProcessLock = new object();
-        
+      
         private Queue<ResourceSnapshot> _resourceSnapshots = new Queue<ResourceSnapshot>();
 
         private void MonitorProcess(object state) {
@@ -74,19 +74,19 @@ namespace ThreeByte.App
                             }
 
                             ClearSnapshotHistory();
-                            int unresponsiveCount = 0;
+                            DateTime unresponsiveTime = DateTime.Now;
                             bool exited = proc.WaitForExit((int)(ResourceSnapshotInterval.TotalMilliseconds));
                             while(!exited) {
                                 //The process is still running.  This is good, just take a snapshot of it
                                 lock(_monitoringProcessLock) {
                                     ResourceSnapshot snapshot = LogResourceSnapshot(_monitoringProcess);
                                     if(snapshot.IsNotResponding) {
-                                        if(++unresponsiveCount >= UnresponsiveIntervalKillCount) {
+                                        if(DateTime.Now >= unresponsiveTime + UnresponsiveTimeout) {
                                             log.WarnFormat("Application is not responding.  Will kill.");
                                             Kill();
                                         }
                                     } else {
-                                        unresponsiveCount = 0;
+                                        unresponsiveTime = DateTime.Now;
                                     }
                                 }
                                 exited = proc.WaitForExit((int)(ResourceSnapshotInterval.TotalMilliseconds));
