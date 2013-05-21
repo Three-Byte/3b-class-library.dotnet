@@ -86,6 +86,45 @@ namespace ThreeByte.Network
             }
         }
 
+        /// <summary>
+        /// Set the input source for the monitor
+        /// </summary>
+        /// <param name="input">1:PC 2:BNC 3:DVI 4:AV 5:S-Video 6:Component 7:MagicNet</param>
+        public void Input(int input) {
+            //Set the input between HDMI/VGA
+
+            byte inputVal = 0;
+            switch(input) {
+                case 1:
+                    inputVal = 0x14; //PC
+                    break;
+                case 2:
+                    inputVal = 0x1E; //BNC
+                    break;
+                case 3:
+                    inputVal = 0x18; //DVI
+                    break;
+                case 4:
+                    inputVal = 0x0C; //AV
+                    break;
+                case 5:
+                    inputVal = 0x04; //S-Video
+                    break;
+                case 6:
+                    inputVal = 0x08; //Component
+                    break;
+                case 7:
+                    inputVal = 0x20; //MagicNet
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("input");
+            }
+
+            byte[] message = new byte[] { 0xAA, 0x14, 0xFE, 0x01, inputVal, 0x00 };
+            checksum(message);
+            _link.SendMessage(message);
+        }
+
         public bool IsPowerOn {
             get {
                 return _networkStatus.Online;
