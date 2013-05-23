@@ -51,7 +51,7 @@ namespace ThreeByte.Network.Devices {
         private Timer _pingTimer;
         private DateTime _lastAckTimestamp = DateTime.Now;
 
-        //Currently we are pinging on a 5 second timer and if 10 seconds go by without a response
+        //Currently we are pinging on a 2 second timer and if 10 seconds go by without a response
         //we set status to offline
         private void timerCallback(object state) {
             Ping();

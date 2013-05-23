@@ -49,7 +49,7 @@ namespace ThreeByte.Network
                     if(message == "EXIT") {
                         listening = false;
                     } else if(message == "PING") {
-                        String responseString = "PONG";
+                        string responseString = "PONG";
                         byte[] sendBytes = Encoding.ASCII.GetBytes(responseString);
                         udpClient.Send(sendBytes, sendBytes.Length, remoteHost);
                     } else if(message == "APPRESTART") {
