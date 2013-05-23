@@ -24,9 +24,11 @@ namespace ThreeByte.Media
         public string StringValue {
             get {
                 TimeSpan t = ElapsedValue;
-                return string.Format("{0:00}d{1:00}:{2:00}:{3:00}", t.Days, t.Hours, t.Minutes, t.Seconds);
+                return string.Format(StringValueFormat, t.Days, t.Hours, t.Minutes, t.Seconds);
             }
         }
+
+        public string StringValueFormat { get; set; }
 
         public TimeSpan ElapsedValue {
             get {
@@ -37,6 +39,7 @@ namespace ThreeByte.Media
 
         public ElapsedTimer() {
             _timer = new Timer(new TimerCallback(Tick));
+            StringValueFormat = "{0:00}d{1:00}:{2:00}:{3:00}";
         }
 
         private readonly Timer _timer;
