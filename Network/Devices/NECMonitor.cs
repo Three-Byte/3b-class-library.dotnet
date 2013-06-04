@@ -33,8 +33,11 @@ namespace ThreeByte.Network.Devices
         void _link_DataReceived(object sender, EventArgs e) {
             while(_link.HasData) {
                 byte[] data = _link.GetData();
-                Console.WriteLine("Response: {0}", printBytes(data));
-                Console.WriteLine("String: {0}", Encoding.ASCII.GetString(data));
+                //Leaving these in could cause a threaded memory error when running in a web service.
+                //Rare and weird, but oh well:
+                //http://stackoverflow.com/questions/12638810/nhibernate-race-condition-when-loading-entity
+                //Console.WriteLine("Response: {0}", printBytes(data));
+                //Console.WriteLine("String: {0}", Encoding.ASCII.GetString(data));
                 ParseResponse(data);
             }
         }
