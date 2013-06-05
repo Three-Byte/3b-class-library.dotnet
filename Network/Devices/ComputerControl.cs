@@ -35,11 +35,12 @@ namespace ThreeByte.Network.Devices {
         private WakeOnLan _wakeOnLan;
 
         public ComputerControl(string host, string macAddress, string broadcastWakeAddress = null) {
-            this.host = host;
+            Host = host;
+            MacAddress = macAddress;
             //This port = 0 means that the next available port number will be assigned
             _sender = new AsyncUdpLink(host, NetworkShutdownManager.UDP_LISTEN_PORT);
             _sender.DataReceived += _sender_DataReceived;
-            _wakeOnLan = new WakeOnLan(macAddress);
+            _wakeOnLan = new WakeOnLan(MacAddress);
             if(!string.IsNullOrWhiteSpace(broadcastWakeAddress)) {
                 _wakeOnLan.BroadcastAddress = IPAddress.Parse(broadcastWakeAddress);
             }
@@ -47,7 +48,6 @@ namespace ThreeByte.Network.Devices {
             _pingTimer.Change(PING_INTERVAL, NEVER);
         }
 
-        private string host = null;
         private Timer _pingTimer;
         private DateTime _lastAckTimestamp = DateTime.Now;
 
@@ -89,15 +89,15 @@ namespace ThreeByte.Network.Devices {
         public void Ping() {
             try {
                 System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
-                PingReply pingReply = ping.Send(host);
+                PingReply pingReply = ping.Send(Host);
                 if(pingReply.Status == IPStatus.Success) {
                     Online = true;
                     _lastAckTimestamp = DateTime.Now;
                 } else {
                     Online = false;
                 }
-            } catch (Exception ex){
-                //Log this exception here.
+            } catch {
+                //Swallow Ping exceptions - it just means the computer cannot be verified
             }
         }
 
