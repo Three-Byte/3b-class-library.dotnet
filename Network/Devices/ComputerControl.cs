@@ -8,9 +8,12 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using log4net;
 
 namespace ThreeByte.Network.Devices {
     public class ComputerControl : INotifyPropertyChanged {
+        private static readonly ILog log = LogManager.GetLogger(typeof(ComputerControl));
+        
         public string Host { get; private set; }
         public string MacAddress { get; private set; }
 
@@ -73,10 +76,12 @@ namespace ThreeByte.Network.Devices {
         }
 
         public void Startup() {
+            log.InfoFormat("Wake Computer: {0}", MacAddress);
             _wakeOnLan.Wake();
         }
 
         public void Shutdown() {
+            log.InfoFormat("Shutdown Computer: {0}", Host);
             byte[] cmdBytes = Encoding.ASCII.GetBytes("SHUTDOWN\r\n");
             _sender.SendMessage(cmdBytes);
         }
