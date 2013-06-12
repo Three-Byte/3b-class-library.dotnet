@@ -29,12 +29,12 @@ namespace ThreeByte.Network
 
             log.InfoFormat("UDP Listener started on port {0}", UDP_LISTEN_PORT);
 
-            string stringIn = string.Empty;
             while(listening) {
                 log.InfoFormat("Listening: {0} / {1}", remoteHost.Address.ToString(), remoteHost.Port);
                 dataBytes = udpClient.Receive(ref remoteHost);
                 log.DebugFormat("Received {0} Bytes: [{1}]", dataBytes.Length, Encoding.ASCII.GetString(dataBytes));
-                stringIn += Encoding.ASCII.GetString(dataBytes).ToUpper();
+                //Incoming commands must be received as a single packet.
+                string stringIn = Encoding.ASCII.GetString(dataBytes).ToUpper();
                 log.DebugFormat("StringIn = [{0}]", stringIn);
 
                 //Parse messages separated by cr
