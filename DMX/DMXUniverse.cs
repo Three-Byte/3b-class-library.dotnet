@@ -43,7 +43,7 @@ namespace ThreeByte.DMX {
             }
         }
         public IDMXControl DmxController { get; set; }
-        public Dictionary<int, byte> DMXValues { get; private set; }
+        public Dictionary<int, byte> DMXValues { get; private set; } 
         public List<LightChannel> LightChannels { get; set; }
 
         #endregion Public Properties
@@ -137,7 +137,9 @@ namespace ThreeByte.DMX {
             foreach(LightChannel channel in this.LightChannels.ToList()) {
                 channel.CoarseChannel = i;
                 channel.FineChannel = i + 1;
-                channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                if(string.IsNullOrWhiteSpace(channel.Name)) {
+                    channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                }
                 if(i > this.NumberOfChannels - this.StartChannel) {
                     this.LightChannels.Remove(channel);
                 }
@@ -150,7 +152,9 @@ namespace ThreeByte.DMX {
             foreach(LightChannel channel in this.LightChannels) {
                 channel.CoarseChannel = i++;
                 channel.FineChannel = 0;
-                channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                if(string.IsNullOrWhiteSpace(channel.Name)) {
+                    channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                }
             }
 
             while(i < this.NumberOfChannels + this.StartChannel) {

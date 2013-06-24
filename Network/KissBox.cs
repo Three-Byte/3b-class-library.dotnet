@@ -32,6 +32,13 @@ namespace ThreeByte.Network
         public KissBox(string ipAddress) {
             _link = new AsyncNetworkLink(ipAddress, TCP_PORT);
             _link.DataReceived += new EventHandler(_link_DataReceived);
+            _link.PropertyChanged += _link_PropertyChanged;
+        }
+
+        void _link_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+            if(e.PropertyName == "IsConnected") {
+                NotifyPropertyChanged("IsConnected");
+            }
         }
 
         public event EventHandler<KissBoxEventArgs> KissBoxActivated;
