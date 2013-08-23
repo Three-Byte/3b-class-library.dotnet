@@ -176,6 +176,13 @@ namespace ThreeByte.DMX {
             return returnValue;
         }
 
+        public static int ComputeNewValue(double progress, int initialVal, int targetVal) {
+            int newValue = initialVal;
+            //Basic linear interpolation
+            newValue = (int)Math.Round(((1.0 - progress) * initialVal) + (progress * targetVal));
+            return newValue;
+        }
+
         private Dictionary<int, int> noTemporalOffest(Dictionary<int, int> defaultOriginValue,
                                                                     Dictionary<int, int> defaultDestinationValue,
                                                                     AnimationClock animationClock) {
@@ -196,14 +203,14 @@ namespace ThreeByte.DMX {
 
             //Interpolate the values
             foreach(int c in fromValues.Keys) {
-                int newValue = fromValues[c];
-                if(toValues.ContainsKey(c)) {
-                    //Basic linear interpolation
-                    newValue = (int)Math.Round(((1.0 - progress) * fromValues[c]) + (progress * toValues[c]));
-                } else {
-                    //This value doesn't change
+
+                int targetValue = fromValues[c];
+
+                if (toValues.ContainsKey(c)) {
+                    targetValue = ComputeNewValue(progress, fromValues[c], toValues[c]);
                 }
-                returnValue[c] = newValue;
+
+                returnValue[c] = targetValue;
                 channelsSet.Add(c);
             }
 
