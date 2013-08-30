@@ -62,6 +62,9 @@ namespace ThreeByte.Network
                     } else if(message == "SHUTDOWN") {
                         log.Info("Shutting down now");
                         System.Diagnostics.Process.Start("shutdown", "/s /f /t 3 /c \"Shutdown Triggered\" /d p:0:0");
+                    } else if (message == "SLEEP") {
+                        log.Info("Sleeping now");
+                        System.Diagnostics.Process.Start("rundll32.exe", "powrprof.dll,SetSuspendState 0,1,0");
                     }
                 }
             }
