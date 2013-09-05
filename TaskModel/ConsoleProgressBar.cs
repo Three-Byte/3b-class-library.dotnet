@@ -30,15 +30,13 @@ namespace ThreeByte.TaskModel
         private Queue<TickCount> TickQueue = new Queue<TickCount>();
 
 
-        private bool _isComplete = false;
         private Stopwatch _stopwatch;
 
         public void Init(int total) {
             Total = total;
             Current = 0;
             Percent = 0.0;
-            Console.CursorVisible = false;
-            _isComplete = false;
+            //Console.CursorVisible = false;
             _stopwatch = Stopwatch.StartNew();
             lock(TickQueue) {
                 TickQueue.Clear();
@@ -75,17 +73,11 @@ namespace ThreeByte.TaskModel
         }
 
         public void Complete() {
-            if (!_isComplete) {
-                Console.WriteLine("\r[==================================================]\tDone.   ");
-                Console.CursorVisible = true;
-                _isComplete = true;
-            }
+            Console.WriteLine("\r[==================================================]\tDone.   ");
+            //Console.CursorVisible = true;
         }
 
         private void Draw() {
-            if (_isComplete) {
-                throw new InvalidOperationException("Cannot update after progress is complete");
-            }
 
             Percent = System.Math.Round((Current * 100.0) / (double)Total, 2);
 
