@@ -96,12 +96,7 @@ namespace ThreeByte.DMX
         }
 
         public void SetValues(Dictionary<int, byte> values) {
-            lock(_dmxValues) {
-                foreach(int i in values.Keys) {
-                    _dmxValues[i] = values[i];
-                }
-                SendDMXData(_dmxValues);
-            }
+            SetValues(values, 1);
         }
 
         public void SetValues(Dictionary<int, byte> values, int startChannel) {

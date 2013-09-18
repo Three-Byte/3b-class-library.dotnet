@@ -69,11 +69,11 @@ namespace ThreeByte.DMX {
 
         }
 
-        public void SetValues(Dictionary<int, byte> values) {
-            if(DmxController != null) {
-                DmxController.SetValues(values);
-            }
-        }
+        //public void SetValues(Dictionary<int, byte> values) {
+        //    if(DmxController != null) {
+        //        DmxController.SetValues(values);
+        //    }
+        //}
 
         public void SetValues(Dictionary<int, byte> values, int startChannel) {
             if(DmxController != null) {

@@ -115,12 +115,7 @@ namespace ThreeByte.DMX
 
         //These values are 1 indexed - but the sent data is 0-indexed
         public void SetValues(Dictionary<int, byte> values) {
-            lock(_dmxValues) {
-                foreach(int i in values.Keys) {
-                    _dmxValues[i-1] = values[i];
-                }
-                SendDMXData(_dmxValues);
-            }
+            SetValues(values, 1);
         }
 
         public void SetValues(Dictionary<int, byte> values, int startChannel) {
