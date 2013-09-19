@@ -10,9 +10,9 @@ namespace ThreeByte.Extension
 {
     public static class ObservableCollectionExtensions
     {
-        public static XElement ToXml<T>(this ObservableCollection<T> source) {
+        public static XElement ToXml<T>(this ObservableCollection<T> source, string parent) {
             var type = typeof(T);
-            XElement xml = new XElement(type.Name);
+            XElement xml = new XElement(parent);
             if (type.GetMethod("ToXml") == null) {
                 return xml;
             }
