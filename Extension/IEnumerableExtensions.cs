@@ -8,9 +8,9 @@ using System.Xml.Linq;
 
 namespace ThreeByte.Extension
 {
-    public static class ObservableCollectionExtensions
+    public static class IEnumerableExtensions
     {
-        public static XElement ToXml<T>(this ObservableCollection<T> source, string parent) {
+        public static XElement ToXml<T>(this IEnumerable<T> source, string parent) {
             var type = typeof(T);
             XElement xml = new XElement(parent);
             if (type.GetMethod("ToXml") == null) {

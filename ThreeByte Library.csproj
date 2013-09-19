@@ -198,7 +198,7 @@
     <Compile Include="DMX\LightingFader.xaml.cs">
       <DependentUpon>LightingFader.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Extension\ObservableCollectionExtensions.cs" />
+    <Compile Include="Extension\IEnumerableExtensions.cs" />
     <Compile Include="FileUtilities\PathUtil.cs" />
     <Compile Include="Html\HtmlRemoval.cs" />
     <Compile Include="Html\WebPageBitmap.cs" />
