@@ -230,7 +230,6 @@
     <Compile Include="Network\Devices\SoundwebFader.cs" />
     <Compile Include="Network\Devices\Vivitek.cs" />
     <Compile Include="Network\Devices\WatchoutController.cs" />
-    <Compile Include="Network\NetworkExtensions.cs" />
     <Compile Include="Network\NetworkShutdownManager.cs" />
     <Compile Include="Network\SamsungLCD.cs" />
     <Compile Include="Network\PowerStrip.cs" />
