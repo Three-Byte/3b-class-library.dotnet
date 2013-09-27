@@ -243,6 +243,8 @@
     <Compile Include="Network\WakeOnLan.cs" />
     <Compile Include="App\ProcessMonitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Schedule\DailyScheduledEventManager.cs" />
+    <Compile Include="Schedule\IScheduledEvent.cs" />
     <Compile Include="Security\Encryptor.cs" />
     <Compile Include="Serial\FramedRawSerialLink.cs" />
     <Compile Include="Serial\FramedSerialLink.cs" />
