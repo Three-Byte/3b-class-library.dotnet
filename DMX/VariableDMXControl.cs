@@ -120,10 +120,10 @@ namespace ThreeByte.DMX
 
         public void SetValues(Dictionary<int, byte> values, int startChannel) {
             lock(_dmxValues) {
-                Console.WriteLine("Start Channel: " + startChannel);
+                //Console.WriteLine("Start Channel: " + startChannel);
                 foreach(int i in values.Keys) {
                     _dmxValues[i - startChannel] = values[i];
-                    Console.WriteLine(string.Format("SetValues: _dmxValues[{0}]: {1}, values[{2}]", i - startChannel, _dmxValues[i - startChannel], i));
+                    //Console.WriteLine(string.Format("SetValues: _dmxValues[{0}]: {1}, values[{2}]", i - startChannel, _dmxValues[i - startChannel], i));
                 }
 
                 SendDMXData(_dmxValues);
