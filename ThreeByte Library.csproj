@@ -142,6 +142,7 @@
     <Compile Include="Controls\ResizingAdorner.cs" />
     <Compile Include="Controls\WatermarkService.cs" />
     <Compile Include="Converters\BooleanOppositeConverter.cs" />
+    <Compile Include="Converters\BooleanToImagePathConverter.cs" />
     <Compile Include="Converters\ByteStreamToImageConverter.cs" />
     <Compile Include="Converters\ByteDoubleConverter.cs" />
     <Compile Include="Converters\ColorToBrushConverter.cs" />
