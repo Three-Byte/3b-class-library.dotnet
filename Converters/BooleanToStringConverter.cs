@@ -7,16 +7,16 @@ namespace ThreeByte.Converters
 {
     public class BooleanToStringConverter : IValueConverter
     {
-        public string TruePath { get; set; }
-        public string FalsePath { get; set; }
+        public string TrueString { get; set; }
+        public string FalseString { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             bool b = (bool)value;
 
             if (b) {
-                return TruePath;
+                return TrueString;
             } else {
-                return FalsePath;
+                return FalseString;
             }
         }
 
