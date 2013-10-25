@@ -42,6 +42,30 @@ namespace ThreeByte.Controls {
         public double EncoderSensitivityAngle { get; set; }
         public double EncoderSensitivityValue { get; set; }
 
+
+
+        public SolidColorBrush FillColor {
+            get { return (SolidColorBrush)GetValue(FillColorProperty); }
+            set { SetValue(FillColorProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for FillColor.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty FillColorProperty =
+            DependencyProperty.Register("FillColor", typeof(SolidColorBrush), typeof(Encoder), new PropertyMetadata(Brushes.Transparent));
+
+
+
+        public Double StrokeWidth {
+            get { return (Double)GetValue(StrokeWidthProperty); }
+            set { SetValue(StrokeWidthProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for StrokeWidth.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty StrokeWidthProperty =
+            DependencyProperty.Register("StrokeWidth", typeof(Double), typeof(Encoder), new PropertyMetadata(1.0));
+
+        
+
        public Encoder() {
             EncoderSensitivityAngle = 1;
             EncoderSensitivityValue = 1;
@@ -71,10 +95,23 @@ namespace ThreeByte.Controls {
         }
 
         private void encThumb_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e) {
+           
+            double newVal = EncoderValue + (-1 * e.VerticalChange * EncoderSensitivityValue);
+            if (ValueMaximum != ValueMinimum) {
+                ValuePreview = Math.Max(Math.Min(newVal, ValueMaximum), ValueMinimum);
+            } else {
+                ValuePreview = EncoderValue + (-1 * e.VerticalChange * EncoderSensitivityValue);
+            }
+
+            double newAngle = ((-1 * (e.VerticalChange) * EncoderSensitivityAngle + InitialRotation) + 360) % 360;
+            //max and min are set, so fix the angle
+            if (ValueMaximum != ValueMinimum && (ValuePreview >= ValueMaximum || ValuePreview <= ValueMinimum)) {
+                return;
+            } else {
+                encoderRotateTransform.Angle = newAngle;
+            }
+            Console.WriteLine("New Angle: " + newAngle + ", Updated Angle: " + encoderRotateTransform.Angle);
             
-            encoderRotateTransform.Angle = ((-1 * (e.VerticalChange) * EncoderSensitivityAngle + InitialRotation) + 360) % 360;
-            Console.WriteLine("Updated Angle: " + encoderRotateTransform.Angle);
-            ValuePreview = EncoderValue + (-1 * e.VerticalChange * EncoderSensitivityValue);
             EncoderTurnedEventArgs ete = new EncoderTurnedEventArgs(ValuePreview);
             if(EncoderTurned != null) {
                 EncoderTurned(this, ete);
