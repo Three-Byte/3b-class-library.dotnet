@@ -71,9 +71,6 @@ namespace ThreeByte.Controls {
             EncoderSensitivityValue = 1;
             EncoderValue = 0;
             ValuePreview = 0;
-            //ValueMaximum = 96;
-            //ValueMinimum = 1;
-            //PreviousValue = ValueMinimum;
             InitializeComponent();
         }
 
@@ -86,7 +83,6 @@ namespace ThreeByte.Controls {
         }
 
         private void encThumb_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) {
-            //InitialRotation = encoderRotateTransform.Angle;
             EncoderValue = ValuePreview;
             EncoderTurnedEventArgs ete = new EncoderTurnedEventArgs(EncoderValue);
             if(EncoderCompleted != null) {
@@ -106,11 +102,14 @@ namespace ThreeByte.Controls {
             double newAngle = ((-1 * (e.VerticalChange) * EncoderSensitivityAngle + InitialRotation) + 360) % 360;
             //max and min are set, so fix the angle
             if (ValueMaximum != ValueMinimum && (ValuePreview >= ValueMaximum || ValuePreview <= ValueMinimum)) {
-                return;
+                if (ValuePreview >= ValueMaximum) {
+                    ValuePreview = ValueMaximum;
+                } else if (ValuePreview <= ValueMinimum) {
+                    ValuePreview = ValueMinimum;
+                }                    
             } else {
                 encoderRotateTransform.Angle = newAngle;
             }
-            Console.WriteLine("New Angle: " + newAngle + ", Updated Angle: " + encoderRotateTransform.Angle);
             
             EncoderTurnedEventArgs ete = new EncoderTurnedEventArgs(ValuePreview);
             if(EncoderTurned != null) {
