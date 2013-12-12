@@ -220,6 +220,7 @@
     <Compile Include="Network\Devices\BrightSignAudioPlayer.cs" />
     <Compile Include="Network\Devices\ChristieDHD670E.cs" />
     <Compile Include="Network\Devices\ComputerControl.cs" />
+    <Compile Include="Network\Devices\IPlayer.cs" />
     <Compile Include="Network\Devices\SoundwebBlock.cs" />
     <Compile Include="Network\Devices\SoundwebPreset.cs" />
     <Compile Include="Network\Devices\WatchoutDisplay.cs" />
