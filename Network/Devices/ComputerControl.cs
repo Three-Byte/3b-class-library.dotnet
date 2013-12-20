@@ -106,6 +106,22 @@ namespace ThreeByte.Network.Devices {
             }
         }
 
+        /// <summary>
+        /// Static utility convenience method to send a single ping request to the specified hostname.
+        /// This method returns false if an exception is raised for any reason.
+        /// </summary>
+        /// <param name="hostname">the hostname of the device to ping</param>
+        /// <returns>true if a ping response is received, false otherwise.</returns>
+        public static bool Ping(string hostname) {
+            try {
+                System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
+                PingReply pingReply = ping.Send(hostname);
+                return (pingReply.Status == IPStatus.Success);
+            } catch {
+                return false;
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnPropertyChanged(string info) {
