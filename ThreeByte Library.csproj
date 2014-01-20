@@ -222,6 +222,7 @@
     <Compile Include="Network\AsyncUdpLink.cs" />
     <Compile Include="Network\ChristieProjector.cs" />
     <Compile Include="Network\ChristieLX700.cs" />
+    <Compile Include="Network\Devices\AjaClip.cs" />
     <Compile Include="Network\Devices\AJAKIProRack.cs" />
     <Compile Include="Network\Devices\BrightSignAudioPlayer.cs" />
     <Compile Include="Network\Devices\ChristieDHD670E.cs" />

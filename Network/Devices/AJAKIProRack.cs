@@ -70,6 +70,15 @@ namespace ThreeByte.Network.Devices {
             return powerSet;
         }
 
+        public List<AjaClip> GetAjaClips() {
+            var request = new RestRequest("clips");
+            request.Method = Method.GET;
+            string content = "";
+            var response = rackClient.Execute(request);
+            content = response.Content;
+            return AjaClip.Load(content);
+        }
+
         /// <summary>
         /// Send a transport command 
         /// </summary>
