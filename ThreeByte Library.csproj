@@ -250,6 +250,7 @@
     <Compile Include="Network\FramedNetworkLink.cs" />
     <Compile Include="Network\NetworkLink.cs" />
     <Compile Include="Network\ShutdownTrigger.cs" />
+    <Compile Include="Network\Util\JavascriptParser.cs" />
     <Compile Include="Network\WakeOnLan.cs" />
     <Compile Include="App\ProcessMonitor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

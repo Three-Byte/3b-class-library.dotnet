@@ -3,6 +3,7 @@ using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,8 +12,9 @@ namespace ThreeByte.Network.Devices {
         private static readonly ILog log = LogManager.GetLogger(typeof(AJAKIProRack));
 
         private RestClient rackClient;
-
+        private readonly string RACK_ADDRESS;
         public AJAKIProRack(string rackAddress) {
+            this.RACK_ADDRESS = rackAddress;
             rackClient = new RestClient(rackAddress);
 
             //Connect();           
@@ -79,6 +81,20 @@ namespace ThreeByte.Network.Devices {
             return AjaClip.Load(content);
         }
 
+        private string loadUrlContent(string url){
+            WebClient client = new WebClient();
+            return client.DownloadString(new Uri(url));
+        }
+
+        public AjaClip CurrentClip() {
+            var result = loadUrlContent(RACK_ADDRESS + "options?eParamID_CurrentClip");
+            var selected = ThreeByte.Network.Util.JavascriptParser<ajaPropertyVal>.Parse(result).Single();
+            var match = GetAjaClips().Where(i => i.clipname == selected.value).FirstOrDefault();
+            return match;
+        }
+
+
+
         /// <summary>
         /// Send a transport command 
         /// </summary>
@@ -87,10 +103,10 @@ namespace ThreeByte.Network.Devices {
         public bool SendTransportCommand(TransportCommand command) {
             bool commandSet = false;
 
-            var request = new RestRequest("config");
-            request.AddParameter("action", "set");
-            request.AddParameter("paramid", "eParamID_TransportCommand");
-            request.AddParameter("value", command.ToString());
+            var request = new RestRequest("options");
+            //request.AddParameter("action", "set");
+            request.AddParameter("paramName", "eParamID_TransportCommand");
+            request.AddParameter("newValue", command.CmdString());
             request.Method = Method.POST;
 
             string content = "";
@@ -129,11 +145,57 @@ namespace ThreeByte.Network.Devices {
                 }
             }
         }
+
+        private int getClipIndex(AjaClip clip) {
+            var all = GetAjaClips();
+            for (int i = 0; i < all.Count; i++) {
+                if (all[i].clipname == clip.clipname) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public bool GoToClip(AjaClip clip) {
+            bool commandSet = false;
+            var idx = getClipIndex(clip);
+            if (idx == -1) {
+                return false;
+            }
+            var url = RACK_ADDRESS + "config?action=set&paramid=eParamID_GoToPlaylistIndex&value=" + idx.ToString()
+                + "&configid=0";
+            log.InfoFormat("Url: {0}", url);
+            var response = loadUrlContent(url);
+
+            return true;
+        }
     }
 
     public enum TransportCommand {
         Play,
         Pause,
         Stop
+    }
+
+    public static class TransportCommandExt {
+
+        public static string CmdString(this TransportCommand cmd) {
+            switch (cmd) {
+                case TransportCommand.Play:
+                    return "1";
+                case TransportCommand.Stop:
+                    return "4";
+            }
+            throw new NotImplementedException();
+        }
+    }
+
+    public class ajaPropertyVal {
+        public ajaPropertyVal() {
+
+        }
+        public string value { get; set; }
+        public string text { get; set; }
+        public string selected { get; set; }
     }
 }
