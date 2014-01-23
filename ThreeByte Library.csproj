@@ -228,6 +228,7 @@
     <Compile Include="Network\ChristieLX700.cs" />
     <Compile Include="Network\Devices\AJAKI\AjaClip.cs" />
     <Compile Include="Network\Devices\AJAKI\AJAKIProRack.cs" />
+    <Compile Include="Network\Devices\BlackMagicVideoRouter.cs" />
     <Compile Include="Network\Devices\BrightSignAudioPlayer.cs" />
     <Compile Include="Network\Devices\ChristieDHD670E.cs" />
     <Compile Include="Network\Devices\ComputerControl.cs" />
