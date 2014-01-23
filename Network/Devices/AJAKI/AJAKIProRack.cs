@@ -1,10 +1,12 @@
 ﻿using log4net;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ThreeByte.Network.Devices {
@@ -17,25 +19,27 @@ namespace ThreeByte.Network.Devices {
             this.RACK_ADDRESS = rackAddress;
             rackClient = new RestClient(rackAddress);
 
-            //Connect();           
+            Connect();           
 
-            //ThreadPool.QueueUserWorkItem(GetTimeCode);
+            ThreadPool.QueueUserWorkItem(GetTimeCode);
         }
 
+        private JObject connectionJson = null;
 
         /// <summary>
         /// Connect to the AJA KI-Pro Rack
         /// </summary>
         public void Connect() {
+            if (connectionJson != null) {
+                return;
+            }
             var request = new RestRequest("json");
             request.AddParameter("action", "connect");
             request.AddParameter("configid", 0);
             request.Method = Method.GET;
 
-            string content = "";
-            rackClient.ExecuteAsync(request, response => {
-                content = response.Content;
-            });
+            var response = rackClient.Execute(request).Content;
+            connectionJson = JObject.Parse(response);
         }
 
         private List<object> WaitForConfigEvents() {
@@ -93,8 +97,6 @@ namespace ThreeByte.Network.Devices {
             return match;
         }
 
-
-
         /// <summary>
         /// Send a transport command 
         /// </summary>
@@ -134,14 +136,34 @@ namespace ThreeByte.Network.Devices {
             return content;
         }
 
+        public event EventHandler TimecodeChanged;
+        private void OnTimecodeChanged() {
+            var handler = TimecodeChanged;
+            if (handler != null) {
+                handler(this, new EventArgs());
+            }
+        }
+
+        public event EventHandler CurrentClipChanged;
+        private void OnCurrentClipChanged() {
+            var handler = CurrentClipChanged;
+            if (handler != null) {
+                handler(this, new EventArgs());
+            }
+        }
+
+        public string Timecode { get; set; }
+
         private void GetTimeCode(object state) {
             while (true) {
-                List<object> events = WaitForConfigEvents();
-
-                foreach (var e in events) {
-                    if (e.ToString() == "eParamID_DisplayTimecode") {
-
-                    }
+                var url = RACK_ADDRESS + "json?action=wait_for_config_events&configid=0&connectionid=" + connectionID;
+                log.InfoFormat("Url: {0}", url);
+                var response = loadUrlContent(url);
+                JArray r = JArray.Parse(response);
+                var paramID = r[0]["param_id"].ToString();
+                if (paramID== "eParamID_DisplayTimecode") {
+                    this.Timecode = r[0]["str_value"].ToString();
+                    OnTimecodeChanged();
                 }
             }
         }
@@ -157,17 +179,22 @@ namespace ThreeByte.Network.Devices {
         }
 
         public bool GoToClip(AjaClip clip) {
-            bool commandSet = false;
             var idx = getClipIndex(clip);
             if (idx == -1) {
                 return false;
             }
+
             var url = RACK_ADDRESS + "config?action=set&paramid=eParamID_GoToPlaylistIndex&value=" + idx.ToString()
                 + "&configid=0";
             log.InfoFormat("Url: {0}", url);
             var response = loadUrlContent(url);
 
             return true;
+        }
+        private string connectionID {
+            get {
+                return connectionJson.Value<string>("connectionid");
+            }
         }
     }
 

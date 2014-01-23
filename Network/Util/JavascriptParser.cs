@@ -91,7 +91,10 @@ namespace ThreeByte.Network.Util {
                 }
                 if (token == ":") {
                     var val = tokens[++i];
-                    inspectionClip.GetType().GetProperty(currentKey).SetValue(inspectionClip, val, null);
+                    var prop = inspectionClip.GetType().GetProperty(currentKey);
+                    if (prop != null) {
+                        prop.SetValue(inspectionClip, val, null);
+                    }
                     continue;
                 }
 
