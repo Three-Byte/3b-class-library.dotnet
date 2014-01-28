@@ -19,9 +19,9 @@ namespace ThreeByte.Network.Devices {
             this.RACK_ADDRESS = rackAddress;
             rackClient = new RestClient(rackAddress);
 
-            Connect();           
+            Connect();
 
-            ThreadPool.QueueUserWorkItem(GetTimeCode);
+            Task.Factory.StartNew(GetTimeCode, TaskCreationOptions.LongRunning);
         }
 
         private JObject connectionJson = null;
@@ -39,7 +39,9 @@ namespace ThreeByte.Network.Devices {
             request.Method = Method.GET;
 
             var response = rackClient.Execute(request).Content;
-            connectionJson = JObject.Parse(response);
+            if (!string.IsNullOrWhiteSpace(response)) {
+                connectionJson = JObject.Parse(response);
+            }
         }
 
         private List<object> WaitForConfigEvents() {
@@ -156,6 +158,10 @@ namespace ThreeByte.Network.Devices {
 
         private void GetTimeCode(object state) {
             while (true) {
+                if (connectionID == null) {
+                    Thread.Sleep(50);
+                    continue;
+                }
                 var url = RACK_ADDRESS + "json?action=wait_for_config_events&configid=0&connectionid=" + connectionID;
                 log.InfoFormat("Url: {0}", url);
                 var response = loadUrlContent(url);
@@ -164,7 +170,9 @@ namespace ThreeByte.Network.Devices {
                 if (paramID== "eParamID_DisplayTimecode") {
                     this.Timecode = r[0]["str_value"].ToString();
                     OnTimecodeChanged();
+                    continue;
                 }
+                Thread.Sleep(50);
             }
         }
 
@@ -193,6 +201,9 @@ namespace ThreeByte.Network.Devices {
         }
         private string connectionID {
             get {
+                if (connectionJson == null) {
+                    return null;
+                }
                 return connectionJson.Value<string>("connectionid");
             }
         }

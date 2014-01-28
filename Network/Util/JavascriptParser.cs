@@ -21,9 +21,6 @@ namespace ThreeByte.Network.Util {
             tokenizerState currentState = tokenizerState.syntaxChar;
             for (int i = 0; i < content.Length; i++) {
                 char c = content[i];
-                if (c == ':') {
-
-                }
                 if (syntaxChars.Contains(c)) {
                     if (currentToken != "") {
                         allTokens.Add(currentToken);
