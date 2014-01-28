@@ -39,6 +39,7 @@ namespace ThreeByte.Network.Devices
 
         public BlackMagicVideoRouter(string ipAddress, int pointCount = 16) {
             POINT_COUNT = pointCount;
+             this._output = new int[POINT_COUNT];
             _link = new FramedNetworkLink(ipAddress, TCP_PORT) { ReceiveFrame = new NetworkFrame() { Footer = new byte[] { 0x0A, 0x0A } } };
             _link.DataReceived += _link_DataReceived;
 
@@ -80,7 +81,7 @@ namespace ThreeByte.Network.Devices
             }
         }
 
-        private int[] _output = new int[POINT_COUNT];
+        private int[] _output;
         public int[] Output {
             get {
                 return _output;
