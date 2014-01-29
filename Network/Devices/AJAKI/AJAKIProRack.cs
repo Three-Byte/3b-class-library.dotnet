@@ -19,19 +19,20 @@ namespace ThreeByte.Network.Devices {
             this.RACK_ADDRESS = rackAddress;
             rackClient = new RestClient(rackAddress);
 
-            Connect();
+            this.Connected = Connect();
 
             Task.Factory.StartNew(GetTimeCode, TaskCreationOptions.LongRunning);
         }
 
         private JObject connectionJson = null;
+        public bool Connected { get; private set; }
 
         /// <summary>
         /// Connect to the AJA KI-Pro Rack
         /// </summary>
-        public void Connect() {
-            if (connectionJson != null) {
-                return;
+        public bool Connect() {
+            if (this.Connected) {
+                return true;
             }
             var request = new RestRequest("json");
             request.AddParameter("action", "connect");
@@ -40,7 +41,15 @@ namespace ThreeByte.Network.Devices {
 
             var response = rackClient.Execute(request).Content;
             if (!string.IsNullOrWhiteSpace(response)) {
-                connectionJson = JObject.Parse(response);
+                try {
+                    connectionJson = JObject.Parse(response);
+                    return true;
+                } catch (Exception ex){
+                    log.InfoFormat("Failed to parse connection response: {0}", response);
+                    return false;
+                }
+            } else { 
+                return false; 
             }
         }
 
@@ -206,6 +215,14 @@ namespace ThreeByte.Network.Devices {
                 }
                 return connectionJson.Value<string>("connectionid");
             }
+        }
+
+        public void Play() {
+            this.SendTransportCommand(TransportCommand.Play);
+        }
+
+        public void Stop() {
+            this.SendTransportCommand(TransportCommand.Stop);
         }
     }
 
