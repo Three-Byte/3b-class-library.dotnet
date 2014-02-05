@@ -13,11 +13,11 @@ namespace ThreeByte.Network.Devices {
     public class AJAKIProRack {
         private static readonly ILog log = LogManager.GetLogger(typeof(AJAKIProRack));
 
-        private RestClient rackClient;
-        private readonly string RACK_ADDRESS;
-        public AJAKIProRack(string rackAddress) {
-            this.RACK_ADDRESS = rackAddress;
-            rackClient = new RestClient(rackAddress);
+        private readonly RestClient rackClient;
+        private readonly string BASE_URL;
+        public AJAKIProRack(string ipAddress) {
+            this.BASE_URL = string.Format("http://{0}/", ipAddress);
+            rackClient = new RestClient(BASE_URL);
 
             this.Connected = Connect();
 
@@ -102,7 +102,7 @@ namespace ThreeByte.Network.Devices {
         }
 
         public AjaClip CurrentClip() {
-            var result = loadUrlContent(RACK_ADDRESS + "options?eParamID_CurrentClip");
+            var result = loadUrlContent(BASE_URL + "options?eParamID_CurrentClip");
             var selected = ThreeByte.Network.Util.JavascriptParser<ajaPropertyVal>.Parse(result).Single();
             var match = GetAjaClips().Where(i => i.clipname == selected.value).FirstOrDefault();
             return match;
@@ -171,7 +171,7 @@ namespace ThreeByte.Network.Devices {
                     Thread.Sleep(50);
                     continue;
                 }
-                var url = RACK_ADDRESS + "json?action=wait_for_config_events&configid=0&connectionid=" + connectionID;
+                var url = BASE_URL + "json?action=wait_for_config_events&configid=0&connectionid=" + connectionID;
                 log.InfoFormat("Url: {0}", url);
                 var response = loadUrlContent(url);
                 JArray r = JArray.Parse(response);
@@ -201,7 +201,7 @@ namespace ThreeByte.Network.Devices {
                 return false;
             }
 
-            var url = RACK_ADDRESS + "config?action=set&paramid=eParamID_GoToPlaylistIndex&value=" + idx.ToString()
+            var url = BASE_URL + "config?action=set&paramid=eParamID_GoToPlaylistIndex&value=" + idx.ToString()
                 + "&configid=0";
             log.InfoFormat("Url: {0}", url);
             var response = loadUrlContent(url);
