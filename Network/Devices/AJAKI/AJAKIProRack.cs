@@ -91,12 +91,15 @@ namespace ThreeByte.Network.Devices {
         }
 
         public List<AjaClip> GetAjaClips() {
+            Stopwatch sw = Stopwatch.StartNew();
             var request = new RestRequest("clips");
             request.Method = Method.GET;
             string content = "";
             var response = rackClient.Execute(request);
             content = response.Content;
-            return AjaClip.Load(content);
+            List<AjaClip> clips = AjaClip.Load(content);
+            log.DebugFormat("Time to get Aja clips: {0}", clips);
+            return clips;
         }
 
         private string loadUrlContent(string url){
