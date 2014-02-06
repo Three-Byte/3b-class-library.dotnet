@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -19,7 +20,9 @@ namespace ThreeByte.Network.Devices {
             this.BASE_URL = string.Format("http://{0}/", ipAddress);
             rackClient = new RestClient(BASE_URL);
 
+            Stopwatch sw = Stopwatch.StartNew();
             this.Connected = Connect();
+            log.DebugFormat("Time to connect: {0}", sw.Elapsed);
 
             Task.Factory.StartNew(GetTimeCode, TaskCreationOptions.LongRunning);
         }
