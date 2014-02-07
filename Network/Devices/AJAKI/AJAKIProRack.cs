@@ -22,7 +22,11 @@ namespace ThreeByte.Network.Devices {
 
             Stopwatch sw = Stopwatch.StartNew();
             this.Connected = Connect();
-            log.DebugFormat("Time to connect: {0}", sw.Elapsed);
+            if (this.Connected) {
+                log.DebugFormat("Time to connect: {0}", sw.Elapsed);
+            } else {
+                log.DebugFormat("Failed to connect to AJA rack");
+            }
 
             Task.Factory.StartNew(GetTimeCode, TaskCreationOptions.LongRunning);
         }
@@ -41,7 +45,7 @@ namespace ThreeByte.Network.Devices {
             request.AddParameter("action", "connect");
             request.AddParameter("configid", 0);
             request.Method = Method.GET;
-
+            request.Timeout = 2500;
             var response = rackClient.Execute(request).Content;
             if (!string.IsNullOrWhiteSpace(response)) {
                 try {
@@ -51,7 +55,8 @@ namespace ThreeByte.Network.Devices {
                     log.InfoFormat("Failed to parse connection response: {0}", response);
                     return false;
                 }
-            } else { 
+            } else {
+                log.InfoFormat("No connetcion response from the AJA rack");
                 return false; 
             }
         }
@@ -91,9 +96,14 @@ namespace ThreeByte.Network.Devices {
         }
 
         public List<AjaClip> GetAjaClips() {
+            if (!this.Connected) {
+                log.Debug("Aja rack not connected so we are not trying to get the clips.");
+            }
+
             Stopwatch sw = Stopwatch.StartNew();
             var request = new RestRequest("clips");
             request.Method = Method.GET;
+            request.Timeout = 10000;
             string content = "";
             var response = rackClient.Execute(request);
             content = response.Content;
