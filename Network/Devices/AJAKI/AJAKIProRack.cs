@@ -34,11 +34,28 @@ namespace ThreeByte.Network.Devices {
         private JObject connectionJson = null;
         public bool Connected { get; private set; }
 
+        public event EventHandler RackConnected;
+        private void OnRackConnected() {
+            var handler = RackConnected;
+            if (handler != null) {
+                handler(this, new EventArgs());
+            }
+        }
+
+        public event EventHandler RackConnectionFailed;
+        private void OnRackConnectionFailed() {
+            var handler = RackConnectionFailed;
+            if (handler != null) {
+                handler(this, new EventArgs());
+            }
+        }
+
         /// <summary>
         /// Connect to the AJA KI-Pro Rack
         /// </summary>
         public bool Connect() {
             if (this.Connected) {
+                log.InfoFormat("Already connected to AJARack");
                 return true;
             }
             var request = new RestRequest("json");
@@ -47,18 +64,26 @@ namespace ThreeByte.Network.Devices {
             request.Method = Method.GET;
             request.Timeout = 2500;
             var response = rackClient.Execute(request).Content;
+            bool success = false;
             if (!string.IsNullOrWhiteSpace(response)) {
                 try {
                     connectionJson = JObject.Parse(response);
-                    return true;
+                    success = true;
                 } catch (Exception ex){
                     log.InfoFormat("Failed to parse connection response: {0}", response);
-                    return false;
+                    OnRackConnectionFailed();
+                    success = false;
                 }
             } else {
                 log.InfoFormat("No connetcion response from the AJA rack");
-                return false; 
+                success = false;
             }
+            if (success) {
+                OnRackConnected();
+            } else {
+                OnRackConnectionFailed();
+            }
+            return success;
         }
 
         private List<object> WaitForConfigEvents() {
