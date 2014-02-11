@@ -123,6 +123,7 @@ namespace ThreeByte.Network.Devices {
         public List<AjaClip> GetAjaClips() {
             if (!this.Connected) {
                 log.Debug("Aja rack not connected so we are not trying to get the clips.");
+                return new List<AjaClip>(); // empty
             }
 
             Stopwatch sw = Stopwatch.StartNew();
