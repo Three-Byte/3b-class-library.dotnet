@@ -133,7 +133,7 @@ namespace ThreeByte.Network.Devices {
             var response = rackClient.Execute(request);
             content = response.Content;
             List<AjaClip> clips = AjaClip.Load(content);
-            log.DebugFormat("Time to get Aja clips: {0}", clips);
+            log.DebugFormat("Time to get Aja clips: {0}", sw.Elapsed);
             return clips;
         }
 
