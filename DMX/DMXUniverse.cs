@@ -1,5 +1,7 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -7,7 +9,7 @@ using System.Xml.Linq;
 namespace ThreeByte.DMX {
     //Each DMX Universe contains 512 channels.    
     public class DMXUniverse {
-
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         #region Public Properties
 
         public DMXUniverse(int id) {
@@ -134,26 +136,67 @@ namespace ThreeByte.DMX {
 
         public void SetToSixteenBitChannelDefault() {
             int i = this.StartChannel;
+            List<string> newNames = new List<string>();
             foreach(LightChannel channel in this.LightChannels.ToList()) {
-                channel.CoarseChannel = i;
-                channel.FineChannel = i + 1;
-                if(string.IsNullOrWhiteSpace(channel.Name)) {
-                    channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                string name = "";
+                try {
+                    channel.CoarseChannel = i;
+                    channel.FineChannel = i + 1;
+                    var n1 = this.LightChannels.Where(j => j.FineChannel == i || j.CoarseChannel == i).Last().Name;
+                    var nameMatch = this.LightChannels.Where(j => j.FineChannel == i + 1 || j.CoarseChannel == i + 1);
+                    var n2 = nameMatch.Last().Name;
+                    name = n1;
+                    if (n1 != n2) {
+                        name = string.Format("{0}|{1}", n1, n2);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(channel.Name)) {
+                        channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                    }
+                    if (i > this.NumberOfChannels - this.StartChannel) {
+                        this.LightChannels.Remove(channel);
+                    }
+                } catch (Exception ex) {
+                    continue;
+                } finally {
+                    newNames.Add(name);
+                    i += 2;
                 }
-                if(i > this.NumberOfChannels - this.StartChannel) {
-                    this.LightChannels.Remove(channel);
-                }
-                i += 2;
             }
+
+            newNames = newNames.Take(this.LightChannels.Count()).ToList();
+            for (int k = 0; k < newNames.Count(); k++) {
+                this.LightChannels[k].Name = newNames[k];
+            }
+
         }
 
         public void SetToEightBitChannelDefault() {
             int i = this.StartChannel;
+            Dictionary<int, string> idxName = new Dictionary<int,string>();
             foreach(LightChannel channel in this.LightChannels) {
                 channel.CoarseChannel = i++;
                 channel.FineChannel = 0;
-                if(string.IsNullOrWhiteSpace(channel.Name)) {
+                var name = channel.Name;
+                if (name.Contains('|')) {
+                    int doub = channel.CoarseChannel * 2;
+                    var s = name.Split('|');
+                    idxName[doub - 1] = s.First();
+                    idxName[doub] = s.Last();
+                }
+            
+                if(string.IsNullOrWhiteSpace(name)) {
                     channel.Name = string.Format("Channel_{0}_{1}", channel.CoarseChannel, channel.FineChannel);
+                }
+            }
+
+            foreach (var n in idxName.OrderBy(j => j.Key)) {
+                var idx = n.Key - 1;
+                if (idx > this.LightChannels.Count() - 1) {
+                    var universeID = this.LightChannels.First().UniverseID;
+                    this.LightChannels.Add(new LightChannel() { Name = n.Value, UniverseID = universeID, CoarseChannel = idx + 1, FineChannel = 0 });
+                } else {
+                    this.LightChannels[idx].Name = n.Value;
                 }
             }
 
