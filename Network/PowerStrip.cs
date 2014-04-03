@@ -10,7 +10,7 @@ using log4net;
 
 namespace ThreeByte.Network
 {
-    public class PowerStrip : IDisposable, INotifyPropertyChanged
+    public class PowerStrip : INotifyPropertyChanged
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(PowerStrip));
 
@@ -31,12 +31,14 @@ namespace ThreeByte.Network
             _ipAddress = ipAddress;
         }
 
-        private bool _disposed = false;
-        public void Dispose() {
-            if(_disposed) {
-                throw new ObjectDisposedException("PowerStrip");
+        private Dictionary<int, bool> _powerStates = new Dictionary<int, bool>();
+        public bool this[int port] {
+            get {
+                if(_powerStates.ContainsKey(port)) {
+                    return _powerStates[port];
+                }
+                return false; // report false for all other ports that don't exist
             }
-            _disposed = true;
         }
 
         public void Power(int outlet, bool state) {
@@ -50,7 +52,31 @@ namespace ThreeByte.Network
                 log.Error(string.Format("Error setting power state: {0} Outlet {1} [{2}]", _ipAddress, outlet, state), ex);
             }
         }
-        
 
+        public void PollState() {
+            try {
+                WebClient c = new WebClient();
+                c.Credentials = new NetworkCredential("admin", "admin");
+                string commandUri = string.Format("http://{0}/cmd.cgi?$A5", _ipAddress);
+                string response = c.DownloadString(commandUri);
+
+                log.DebugFormat("Response: {0}", response);
+
+                // Expected response: xxxx,cccc,tttt
+                // read right to left for each field, eg - 01 means port 1 is on
+                char[] powerStates = response.Split(',')[0].ToCharArray();
+                for(int i = 0; i < powerStates.Length; i++) {
+                    char powerBit = powerStates[powerStates.Length - 1 - i];
+                    if(powerBit == '1') {
+                        _powerStates[i + 1] = true;
+                    } else if(powerBit == '0') {
+                        _powerStates[i + 1] = false;
+                    }
+                }
+
+            } catch(Exception ex) {
+                log.Error(string.Format("Error getting power state: {0}", _ipAddress), ex);
+            }
+        }
     }
 }
