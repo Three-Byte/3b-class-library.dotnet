@@ -60,8 +60,6 @@ namespace ThreeByte.Network
                 string commandUri = string.Format("http://{0}/cmd.cgi?$A5", _ipAddress);
                 string response = c.DownloadString(commandUri);
 
-                log.DebugFormat("Response: {0}", response);
-
                 // Expected response: xxxx,cccc,tttt
                 // read right to left for each field, eg - 01 means port 1 is on
                 char[] powerStates = response.Split(',')[0].ToCharArray();
