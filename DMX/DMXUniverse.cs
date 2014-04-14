@@ -50,32 +50,26 @@ namespace ThreeByte.DMX {
 
         #endregion Public Properties
 
-        public void Blackout() {
-
-        }
-
         private void UpdateDMXValueRange() {
-
             HashSet<int> includedChannels = new HashSet<int>(DMXValues.Keys);
+            log.DebugFormat("UpdateDMXValueRange [{0}] - prior channel count: {1}", ID, includedChannels.Count);
+            int added = 0;
+            int deleted = 0;
             foreach(int c in includedChannels) {
                 if((c < StartChannel) || (c > (StartChannel + NumberOfChannels))) {
                     DMXValues.Remove(c);
+                    deleted++;
                 }
             }
 
             for(int c = StartChannel; c < StartChannel + NumberOfChannels; ++c) {
                 if(!DMXValues.ContainsKey(c)) {
                     DMXValues[c] = 0;
+                    added++;
                 }
             }
-
+            log.DebugFormat("UpdateDMXValueRange [{0}] - Added: {1} Deleted: {2}", ID, added, deleted);
         }
-
-        //public void SetValues(Dictionary<int, byte> values) {
-        //    if(DmxController != null) {
-        //        DmxController.SetValues(values);
-        //    }
-        //}
 
         public void SetValues(Dictionary<int, byte> values, int startChannel) {
             if(DmxController != null) {
