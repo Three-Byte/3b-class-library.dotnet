@@ -112,9 +112,10 @@ namespace ThreeByte.Network.Devices
         }
 
         /// <summary>
-        /// 
+        /// NOTE: Input and Outputs are 1-indexed in real life on the labels, however they are exposed as zero-indexed in the API
+        /// You must translate your input parameters to get the expected result: i.e. Channel 14 == index 13
         /// </summary>
-        /// <param name="points">input output pairs, ex: in1, out0, in2, out1</param>
+        /// <param name="points">input output pairs, ex: in1, out1, in2, out2</param>
         public void SetOutput(params int[] points) {
             if((points.Length % 2) != 0) {
                 throw new ArgumentException("Output config must be specified as pairs of integers: <IN1, OUT1, IN2, OUT2>", "points");
