@@ -270,6 +270,7 @@
     <Compile Include="Schedule\ScheduleService.cs" />
     <Compile Include="TaskModel\AsyncTaskBase.cs" />
     <Compile Include="TaskModel\IAsyncTask.cs" />
+    <Compile Include="TeamCity\RESTUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="3byte.ico" />
