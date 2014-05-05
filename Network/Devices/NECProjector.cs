@@ -10,19 +10,18 @@ namespace ThreeByte.Network.Devices {
 
         private static readonly ILog log = LogManager.GetLogger(typeof(NECProjector));
 
-        private FramedByteNetworkLink _link;
+        private AsyncNetworkLink _link;
+        
         //port = 7142
         public NECProjector(string ipAddress, int port) {
-            _link = new FramedByteNetworkLink(ipAddress, port);
-            _link.SendFrame = new NetworkFrame() { Header = new byte[] { 0x01 }, Footer = new byte[] { 0x0D } };
-            _link.ReceiveFrame = _link.SendFrame;
-
+            _link = new AsyncNetworkLink(ipAddress, port);
+            
             _link.DataReceived += _link_DataReceived;
         }
 
         private void _link_DataReceived(object sender, EventArgs e) {
             while(_link.HasData) {
-                byte[] data = _link.GetData();
+                byte[] data = _link.GetMessage();
                 //Leaving these in could cause a threaded memory error when running in a web service.
                 //Rare and weird, but oh well:
                 //http://stackoverflow.com/questions/12638810/nhibernate-race-condition-when-loading-entity
@@ -33,11 +32,14 @@ namespace ThreeByte.Network.Devices {
         }
 
         private void ParseResponse(byte[] data) {
-            throw new NotImplementedException();
+            foreach(var b in data) {
+                Console.Write(b.ToString() + ",");
+            }
+            Console.WriteLine();
         }
 
         public void PowerOn(){
-            _link.SendData(PowerOnMessage());
+            _link.SendMessage(PowerOnMessage());
         }
 
         private byte[] PowerOnMessage() {
@@ -54,7 +56,7 @@ namespace ThreeByte.Network.Devices {
         }
 
         public void PowerOff() {
-            _link.SendData(PowerOffMessage());
+            _link.SendMessage(PowerOffMessage());
         }
 
         private byte[] PowerOffMessage() {
