@@ -66,6 +66,7 @@ namespace ThreeByte.DMX
             _dmxValues = new byte[DMXPacketSize];
             StartChannel = startChannel;
             serialLink = new SerialLink(comPort);
+            serialLink.DataReceived += serialLink_DataReceived;
         }
 
         public bool IsOpen {
@@ -170,6 +171,114 @@ namespace ThreeByte.DMX
         public void Dispose() {
             serialLink.Dispose();
         }
+
+        #region DMX Input
+
+        private readonly byte[] _dmxInputValues = new byte[512];
+        
+        public byte[] GetInputValues() {
+            byte[] dmxValues = new byte[_dmxInputValues.Length];
+            Array.Copy(_dmxInputValues, dmxValues, _dmxInputValues.Length);
+            return dmxValues;
+        }
+
+        public event EventHandler InputChanged;
+
+        private void RaiseInputChanged() {
+            var handler = InputChanged;
+            if(handler != null) {
+                handler(this, EventArgs.Empty);
+            }
+        }
+
+        private enum ParseInputState { Start, Header, Data, End }
+
+        private readonly MemoryStream inputBuffer = new MemoryStream();
+        private ParseInputState inputState = ParseInputState.Start;
+        private int headerBytesSeen = 0;
+        private int dataBytesExpected = 0;
+        private int dataBytesSeen = 0;
+        private bool dmxValid = false;
+        private static readonly byte DMX_RECEIVE_LABEL = (byte)5;
+
+        private void serialLink_DataReceived(object sender, EventArgs e) {
+            while(serialLink.HasData) {
+                byte[] received = serialLink.GetMessage();
+
+                foreach(byte b in received) {
+                    switch(inputState) {
+                        case ParseInputState.Start:
+                            if(b == DMX_START_CODE) {
+                                inputState = ParseInputState.Header;
+                                headerBytesSeen = 0;
+                            }
+                            break;
+                        case ParseInputState.Header:
+                            if(headerBytesSeen == 0) {
+                                if(b == DMX_RECEIVE_LABEL) {
+                                    headerBytesSeen++;
+                                } else {
+                                    inputState = ParseInputState.Start; // Abort and start over
+                                }
+                            } else if(headerBytesSeen == 1) {
+                                // Capture and store LSB of data length
+                                dataBytesExpected = b;
+                                headerBytesSeen++;
+                            } else if(headerBytesSeen == 2) {
+                                // Capture and store MSB of data length
+                                dataBytesExpected |= (b << 8);
+                                dataBytesSeen = 0;
+                                inputBuffer.Position = 0;
+                                inputState = ParseInputState.Data;
+                            }
+                            break;
+                        case ParseInputState.Data:
+                            if(dataBytesSeen == 0) {
+                                // Check if DMX status byte is valid
+                                // If the first byte (receive status is not 0, something is wrong, discard this packet)
+                                dmxValid = (b == 0);
+                            } else if(dataBytesSeen < dataBytesExpected) {
+                                inputBuffer.WriteByte(b);
+                            }
+                            dataBytesSeen++;
+                            if(dataBytesSeen == dataBytesExpected) {
+                                inputState = ParseInputState.End;
+                            }
+                            break;
+                        case ParseInputState.End:
+                            if(b == DMX_END_CODE) {
+                                if(dmxValid) {
+                                    // Pop the message and send it
+                                    HandleInputBytes(inputBuffer.GetBuffer(), dataBytesSeen - 1);
+                                } else {
+                                    log.Error("DMX status is not valid - packet is corrupt.  Ignoring");
+                                }
+                            } else {
+                                // Abort, something was corrupt
+                                inputState = ParseInputState.Start;
+                            }
+                            break;
+                    }
+                }
+            }
+        }
+
+        
+        // The received packet is padded with an initial zero byte for channel 0 which is ignored
+        private void HandleInputBytes(byte[] data, int length) {
+            bool changed = false;
+            for(int i = 0; i < _dmxInputValues.Length && i < length-1; i++) {
+                if(_dmxInputValues[i] != data[i + 1]) {
+                    changed = true;
+                }
+                _dmxInputValues[i] = data[i + 1];
+            }
+            if(changed) {
+                RaiseInputChanged();
+            }
+        }
+
+        #endregion DMX Input
 
     }
 }
