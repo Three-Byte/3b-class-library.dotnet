@@ -24,7 +24,30 @@ namespace ThreeByte.Network
                 PropertyChanged(this, new PropertyChangedEventArgs(info));
             }
         }
+        
+        public string IpAddress {
+            get {
+                return _networkStatus.Host;
+            }
+        }
 
+        public string MacAddress {
+            get {
+                return _networkStatus.MacAddress;
+            }
+        }
+
+        //A value between 0-100
+        private int _backlight;
+        public int Backlight {
+            get {
+                return _backlight;
+            }
+            set {
+                _backlight = value;
+                NotifyPropertyChanged("Backlight");
+            }
+        }
         #endregion Public Properties
 
         private AsyncNetworkLink _link;
@@ -38,16 +61,25 @@ namespace ThreeByte.Network
             _networkStatus.PropertyChanged += _networkStatus_PropertyChanged;
         }
 
-        void _networkStatus_PropertyChanged(object sender, PropertyChangedEventArgs e) {
+        private void _networkStatus_PropertyChanged(object sender, PropertyChangedEventArgs e) {
             if(e.PropertyName == "Online") {
                 NotifyPropertyChanged("IsPowerOn");
             }
         }
 
-        void _link_DataReceived(object sender, EventArgs e) {
+        private void _link_DataReceived(object sender, EventArgs e) {
             while(_link.HasData) {
                 byte[] data = _link.GetMessage();
                 log.InfoFormat("Data Received: {0}", printBytes(data));
+                ParseReceivedData(data);
+            }
+        }
+
+        private void ParseReceivedData(byte[] data) {
+
+            //See if this is a Backlight status message
+            if(data.Length == 8) {
+
             }
         }
 
@@ -121,6 +153,30 @@ namespace ThreeByte.Network
             }
 
             byte[] message = new byte[] { 0xAA, 0x14, 0xFE, 0x01, inputVal, 0x00 };
+            checksum(message);
+            _link.SendMessage(message);
+        }
+
+
+        //TODO: make this private
+        public void QueryBacklight() {
+            byte[] message = new byte[] { 0xAA, 0x58, 0xFE, 0x00, 0x00 };
+            checksum(message);
+            _link.SendMessage(message);
+        }
+
+        public void QueryStatus() {
+            byte[] message = new byte[] { 0xAA, 0x00, 0xFE, 0x00, 0x00 };
+            checksum(message);
+            _link.SendMessage(message);
+        }
+
+        /// <summary>
+        /// Sets the backlight lamp value
+        /// </summary>
+        /// <param name="value">Lamp value (0 - 100)</param>
+        public void SetBacklight(int value) {
+            byte[] message = new byte[] { 0xAA, 0x58, 0xFE, 0x01, (byte)value, 0x00 };
             checksum(message);
             _link.SendMessage(message);
         }
