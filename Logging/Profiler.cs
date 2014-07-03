@@ -49,6 +49,51 @@ namespace ThreeByte.Logging {
 			Start(name);
 			return duration;
 		}
+
+        public TimeSpan GetLongPollAverage(string name) {
+            if(this.longPoll.ContainsKey(name)) {
+                return TimeSpan.FromTicks(this.longPoll[name].Average());
+            } else {
+                throw new Exception("There is no key in the longpoll that matches your name.");
+            }
+        }
+
+        ///// <summary>
+        ///// Used to include a duration that has already transpired.  This helps in keeping track of collections of concurrent events.
+        ///// </summary>
+        //public void ReportConcludedDuration(string name, TimeSpan duration) {
+        //    this.startVals[name] = DateTime.Now.TimeOfDay - duration;
+        //    Stop(name);
+        //}
+
+        Dictionary<string, TimeSpan> timeLibrary = new Dictionary<string, TimeSpan>();
+        public void BeginTimeLibraryEvent(string key) {
+            this.timeLibrary[key] = DateTime.Now.TimeOfDay;
+        }
+        public void RemoveTimeLibraryEvent(string key) {
+            this.timeLibrary.Remove(key);
+        }
+
+        /// <summary>
+        /// Used to retreived a time from the time library and add the intervening interval to the profiler by calling ReportConcludedDuration with the found interval.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="eventName"></param>
+        /// <returns></returns>
+        public TimeSpan ReportConcludedLibraryDuration(string key, string eventName) {
+            this.startVals[eventName] = GetTimeFromLibrary(key);
+            RemoveTimeLibraryEvent(key);
+            return Stop(eventName);
+            //ReportConcludedDuration(eventName, interval);
+        }
+
+        public TimeSpan GetTimeFromLibrary(string key) {
+            if (this.timeLibrary.ContainsKey(key)) {
+                return this.timeLibrary[key];
+            }
+            throw new Exception(string.Format("There is no time in the library for the key [{0}]", key));
+        }
+
 	}
 
 	public class LongPoll{
@@ -94,4 +139,5 @@ namespace ThreeByte.Logging {
 				TimeSpan.FromTicks((long)Average()).TotalMilliseconds);
 		}
 	}
+
 }
