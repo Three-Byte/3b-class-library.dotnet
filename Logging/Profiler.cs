@@ -54,7 +54,7 @@ namespace ThreeByte.Logging {
             if(this.longPoll.ContainsKey(name)) {
                 return TimeSpan.FromTicks(this.longPoll[name].Average());
             } else {
-                throw new Exception("There is no key in the longpoll that matches your name.");
+                return TimeSpan.FromSeconds(0);
             }
         }
 
