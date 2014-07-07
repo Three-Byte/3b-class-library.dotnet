@@ -18,6 +18,12 @@ namespace ThreeByte.Logging {
 			this.startVals[name] = DateTime.Now.TimeOfDay;
 		}
 
+        public void ResetAverages(string name) {
+            if(this.longPoll.ContainsKey(name)) {
+                this.longPoll[name].Reset();
+            }
+        }
+
 		public TimeSpan Stop(string name) {
 			TimeSpan startVal = this.startVals[name];
 			TimeSpan duration = DateTime.Now.TimeOfDay - startVal;
@@ -125,7 +131,11 @@ namespace ThreeByte.Logging {
 		}
 
 		public long Average() {
-			return Sum / Count;
+            if(Count > 0) {
+			    return Sum / Count;
+            } else {
+                return 0;
+            }
 		}
 
 		public double Min { get; set; }
