@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace ThreeByte.Logging {
 	public class Profiler {
-		public Profiler() {
+        public Profiler() {
 			this.startVals = new Dictionary<string, TimeSpan>();
 			this.durations = new Dictionary<string, TimeSpan>();
 			this.longPoll = new Dictionary<string, LongPoll>();
@@ -96,8 +96,9 @@ namespace ThreeByte.Logging {
         public TimeSpan GetTimeFromLibrary(string key) {
             if (this.timeLibrary.ContainsKey(key)) {
                 return this.timeLibrary[key];
+            } else {                
+                return TimeSpan.Zero;
             }
-            throw new Exception(string.Format("There is no time in the library for the key [{0}]", key));
         }
 
 	}
