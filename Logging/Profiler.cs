@@ -87,17 +87,22 @@ namespace ThreeByte.Logging {
         /// <param name="eventName"></param>
         /// <returns></returns>
         public TimeSpan ReportConcludedLibraryDuration(string key, string eventName) {
-            this.startVals[eventName] = GetTimeFromLibrary(key);
-            RemoveTimeLibraryEvent(key);
-            return Stop(eventName);
+            TimeSpan? startTime = GetTimeFromLibrary(key);
+            if(startTime != null) {
+                this.startVals[eventName] = startTime.Value;
+                RemoveTimeLibraryEvent(key);
+                return Stop(eventName);
+            } else {
+                return TimeSpan.Zero;
+            }
             //ReportConcludedDuration(eventName, interval);
         }
 
-        public TimeSpan GetTimeFromLibrary(string key) {
+        public TimeSpan? GetTimeFromLibrary(string key) {
             if (this.timeLibrary.ContainsKey(key)) {
                 return this.timeLibrary[key];
             } else {                
-                return TimeSpan.Zero;
+                return null;
             }
         }
 
