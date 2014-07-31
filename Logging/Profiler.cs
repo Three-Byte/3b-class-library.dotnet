@@ -14,8 +14,12 @@ namespace ThreeByte.Logging {
 		Dictionary<string, TimeSpan> startVals;
 		Dictionary<string, TimeSpan> durations;
 		Dictionary<string, LongPoll> longPoll;
+
+        private readonly object _syncStartVals = new object();
 		public void Start(string name) {
-			this.startVals[name] = DateTime.Now.TimeOfDay;
+            lock(_syncStartVals) {
+			    this.startVals[name] = DateTime.Now.TimeOfDay;
+            }
 		}
 
         public void ResetAverages(string name) {
@@ -25,7 +29,10 @@ namespace ThreeByte.Logging {
         }
 
 		public TimeSpan Stop(string name) {
-			TimeSpan startVal = this.startVals[name];
+            TimeSpan startVal = TimeSpan.Zero;
+            lock(_syncStartVals) {
+                startVal = this.startVals[name];
+            }
 			TimeSpan duration = DateTime.Now.TimeOfDay - startVal;
 			this.durations[name] = duration;
 			if(this.longPoll.ContainsKey(name)) {
@@ -48,7 +55,11 @@ namespace ThreeByte.Logging {
 
 		public double Interval(string name) {
 			double duration = 0;
-			if(startVals.ContainsKey(name)) {
+            bool startValsContainsKey = false;
+            lock(_syncStartVals) {
+                startValsContainsKey = startVals.ContainsKey(name);
+            }
+			if(startValsContainsKey) {
 				duration = Stop(name).TotalMilliseconds;
 				duration = TimeSpan.FromTicks(longPoll[name].Average()).TotalMilliseconds;
 			}
@@ -89,7 +100,9 @@ namespace ThreeByte.Logging {
         public TimeSpan ReportConcludedLibraryDuration(string key, string eventName) {
             TimeSpan? startTime = GetTimeFromLibrary(key);
             if(startTime != null) {
-                this.startVals[eventName] = startTime.Value;
+                lock(_syncStartVals) {
+                    this.startVals[eventName] = startTime.Value;
+                }
                 RemoveTimeLibraryEvent(key);
                 return Stop(eventName);
             } else {
