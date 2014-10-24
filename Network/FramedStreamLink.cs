@@ -62,7 +62,7 @@ namespace ThreeByte.Network {
         #region Implements IDisposable
         private bool _disposed = false;
         /// <summary>
-        /// Implementation of IDisposable interface.  Cancels the thread and releases resources.
+        /// Implementation of IDisposable interface.
         /// Clients of this class are responsible for calling it.
         /// </summary>
         public void Dispose() {
@@ -87,8 +87,9 @@ namespace ThreeByte.Network {
         private int _footerPos = 0;
 
         private void startReading() {
-            Task readTask = new Task(async () => {
-                await readLoop();
+            Task readTask = new Task(() => {
+                // Don't use await here, because we aren't actually waiting on that delegate.
+                readLoop().Wait();
             }, TaskCreationOptions.LongRunning);
             readTask.ContinueWith(t =>{
                 if(t.IsFaulted) {
