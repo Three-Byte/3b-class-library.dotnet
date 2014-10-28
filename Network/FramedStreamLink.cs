@@ -164,7 +164,7 @@ namespace ThreeByte.Network {
         /// <param name="message"></param>
         public async void SendMessage(string message) {
             if(_disposed) {
-                throw new ObjectDisposedException("Cannot send message on disposed FramedSerialLink");
+                throw new ObjectDisposedException("Cannot send message on disposed FramedStreamLink");
             }
 
             //Add the header and footer
