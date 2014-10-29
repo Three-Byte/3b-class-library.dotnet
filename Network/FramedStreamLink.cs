@@ -162,7 +162,7 @@ namespace ThreeByte.Network {
         /// Asynchronously sends the tcp message, waiting until the connection is reestablihsed if necessary
         /// </summary>
         /// <param name="message"></param>
-        public async void SendMessage(string message) {
+        public async Task SendMessage(string message) {
             if(_disposed) {
                 throw new ObjectDisposedException("Cannot send message on disposed FramedStreamLink");
             }
