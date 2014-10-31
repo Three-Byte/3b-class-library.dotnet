@@ -52,6 +52,23 @@ namespace ThreeByte.Network.Devices
             SubscribeLevel(); //Update the fader level right away
         }
 
+        public void SetPercent(int newPercent) {
+            byte[] percentMessage = new byte[13];
+            percentMessage[0] = 0x8D;  //SetPercent
+
+            _header.CopyTo(percentMessage, 1);
+            SV_MASTER_GAIN.CopyTo(percentMessage, 7);
+
+            int percent = newPercent * short.MaxValue;
+            BitConverter.GetBytes(percent).Reverse().ToArray().CopyTo(percentMessage, 9);
+
+            PackAndSendMessage(percentMessage);
+            SubscribeLevel(); //Update the fader level right away
+            
+            //The fader level will be updated by callback. To simulate for testing:
+            //FaderLevel = (int)(((newPercent / 100.0) * 280000.0) - 280000);
+        }
+
         public void Mute(bool mute) {
             byte[] muteMessage = new byte[13];
             muteMessage[0] = 0x88;  //Set Val
