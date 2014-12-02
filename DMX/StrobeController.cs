@@ -30,8 +30,6 @@ namespace ThreeByte.DMX
             }
         }
 
-        public event EventHandler<StrobeEventArgs> Pulse;
-
         private int _phaseShift = 0;
         public int PhaseShift {
             get {
@@ -154,24 +152,19 @@ namespace ThreeByte.DMX
                         NextPulseOnTime = Math.Max(currentTime + period - PhaseShift, 0);  //Ensure this isn't ever < 0 in (very early) corner cases
                         NextPulseOffTime = Math.Max(currentTime + (period / 2) - PhaseShift, 0);
                     } else {
-                        if(Pulse != null) {
-                            Pulse(this, new StrobeEventArgs(true));  //Turn back to on
-                            NextPulseOnTime = -1;
-                            NextPulseOffTime = -1;
-                        }
+                        RaisePulse(true); //Turn back to on
+                        NextPulseOnTime = -1;
+                        NextPulseOffTime = -1;
                     }
 
                     IsPulseOn = true; //Explicitly Pulse On
-                    if(Pulse != null) {
-                        Pulse(this, new StrobeEventArgs(IsPulseOn));
-                    }
+                    RaisePulse(IsPulseOn);
                 }
 
                 if((currentTime > NextPulseOffTime + PhaseShift) && (NextPulseOffTime > -1)) {
                     IsPulseOn = false;  //Explicitly Pulse Off
-                    if(Pulse != null) {
-                        Pulse(this, new StrobeEventArgs(IsPulseOn));
-                    }
+                    RaisePulse(IsPulseOn);
+                    NextPulseOffTime = -1; // Only send one off pulse
                 }
 
                 if(_disposed) {
@@ -181,7 +174,14 @@ namespace ThreeByte.DMX
                     Thread.Sleep(1);
                 }
             }
+        }
 
+        public event EventHandler<StrobeEventArgs> Pulse;
+        private void RaisePulse(bool on) {
+            var handler = Pulse;
+            if(handler != null) {
+                handler(this, new StrobeEventArgs(on));
+            }
         }
 
         private volatile bool _disposed = false;
