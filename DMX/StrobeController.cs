@@ -7,16 +7,14 @@ using System.Threading;
 using System.ComponentModel;
 using log4net;
 
-namespace ThreeByte.DMX
-{
-    public class StrobeController : IDisposable, INotifyPropertyChanged
-    {
+namespace ThreeByte.DMX {
+    public class StrobeController : IDisposable, INotifyPropertyChanged {
 
         private static readonly ILog log = LogManager.GetLogger(typeof(StrobeController));
 
         private Stopwatch Watch = Stopwatch.StartNew();
         private Thread PulseThread;
-        private static readonly bool HIGH_PRIORITY = false;
+        private static readonly bool HIGH_PRIORITY = true;
 
         public StrobeController() {
             PulseThread = new Thread(new ThreadStart(RunPulse));
@@ -57,7 +55,7 @@ namespace ThreeByte.DMX
             }
         }
 
-        private object FrequencyLock = new object();
+        private readonly object FrequencyLock = new object();
         private double _frequency = 0.0;
         public double Frequency {
             get {
@@ -92,81 +90,99 @@ namespace ThreeByte.DMX
 
         public void SetNextPulse(int offsetMillis) {
             SyncPulseTime = Watch.ElapsedMilliseconds + offsetMillis;
-            //Console.WriteLine("SyncPulse Time: {0}", SyncPulseTime);
         }
 
         private void RunPulse() {
 
             while(true) {
                 Debug.Assert(NextPulseOnTime >= -1, "Next pulse should never be less than -1");
+                Stopwatch sw = Stopwatch.StartNew();
 
                 double freq;
                 lock(FrequencyLock) {
                     freq = Frequency;
-                }
 
-                int period = 0;
-                if(freq != 0.0) {
-                    //True period: 1/Hz
-                    period = (int)Math.Round(1000.0 / freq);
-                }
-                if(period > 1000) {
-                    //The period should never be more than 1 second
-                    log.Info(string.Format("Period compression: {0} --> 1000", period));
-                    period = 1000;
-                }
+                    int period = 0;
+                    if(freq != 0.0) {
+                        //True period: 1/Hz
+                        period = (int)Math.Round(1000.0 / freq);
+                    }
+                    if(period > 1000) {
+                        //The period should never be more than 1 second
+                        log.Info(string.Format("Period compression: {0} --> 1000", period));
+                        period = 1000;
+                    }
 
-                //*********************************************
-                //Synchronization correction
-                //*********************************************
-                long nextSyncPulseTime = SyncPulseTime; //Avoid double read errors on different threads
-                if((nextSyncPulseTime > 0) && (freq != 0.0)) {
-                    
-                    long absOffset = (nextSyncPulseTime - NextPulseOnTime);
-                    long relOffset = (long)(absOffset - (Math.Round(absOffset/(double)period) * (double)period));
+                    //*********************************************
+                    //Synchronization correction
+                    //*********************************************
+                    long nextSyncPulseTime = SyncPulseTime; //Avoid double read errors on different threads
+                    if((nextSyncPulseTime > 0) && (freq != 0.0) && SyncNudge) {
+                        long absOffset = (nextSyncPulseTime - NextPulseOnTime);
+                        
+                        while(absOffset < -period/2) {
+                            // Ignore negative offsets temporarily
+                            // look forward only to resync
+                            absOffset += period;
+                        }
+                        while(absOffset > period/2) {
+                            // Make sure the offset is within one period
+                            absOffset -= period;
+                        }
+                        
+                        //long relOffset = (long)(absOffset - (Math.Round(absOffset/(double)period) * (double)period));
+                        long relOffset = absOffset;
 
-                    SyncOffset = (int)(absOffset);
+                        SyncOffset = (int)(absOffset);
+                        //log.Info(string.Format("Checking for sync correction, relOffset: {0}, SyncNudge: {1}, Period: {2}, NextPulseOnTime: {3}", Math.Abs(relOffset), SyncNudge, period, NextPulseOnTime));
 
-                    log.Info(string.Format("Checking for sync correction, relOffset: {0}, SyncNudge: {1}, Period: {2}, NextPulseOnTime: {3}", Math.Abs(relOffset), SyncNudge, period, NextPulseOnTime));
-
-                    if(Math.Abs(relOffset) > 10 && SyncNudge) {
-                        int nudge = (int)Math.Min(period / 16, Math.Abs(relOffset));
-                        if(relOffset > 0) {
-                            log.Info(string.Format("push --> {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
-                            NextPulseOnTime = NextPulseOnTime + nudge;  //Nudge the pulse back to where it should be (10ms)
-                        } else {
-                            log.Info(string.Format("push <-- {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
-                            NextPulseOnTime = Math.Max(NextPulseOnTime - nudge, 0);  //Nudge the pulse back to where it should be (10ms), but never less than 0
+                        // Take Action
+                        if(Math.Abs(relOffset) > 0) {
+                            int nudge = (int)Math.Min(period / 16, Math.Abs(relOffset));
+                            if(relOffset > 0) {
+                                // NOTE: Logging actually causes this loop to take too long and glitch, so don't do it here
+                                //log.Info(string.Format("push --> {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
+                                NextPulseOnTime = NextPulseOnTime + nudge;  //Nudge the pulse back to where it should be (10ms)
+                            } else {
+                                //log.Info(string.Format("push <-- {2}: {0}/{1}, nextSync: {3}, currentTime: {4}", absOffset, relOffset, nudge, nextSyncPulseTime, Watch.ElapsedMilliseconds));
+                                NextPulseOnTime = Math.Max(NextPulseOnTime - nudge, 0);  //Nudge the pulse back to where it should be (10ms), but never less than 0
+                            }
+                            SyncPulseTime = 0;
                         }
                     }
-                    SyncPulseTime = 0;
-                }
 
-                //***********************************
-                // Triggered Pulses
-                //***********************************
-                long currentTime = Watch.ElapsedMilliseconds;
-                if((currentTime > NextPulseOnTime + PhaseShift) && (NextPulseOnTime > -1)) {
-                    if(freq != 0.0) {
-                        _phaseShift = (period / 2);
-                        NextPulseOnTime = Math.Max(currentTime + period - PhaseShift, 0);  //Ensure this isn't ever < 0 in (very early) corner cases
-                        NextPulseOffTime = Math.Max(currentTime + (period / 2) - PhaseShift, 0);
-                    } else {
-                        RaisePulse(true); //Turn back to on
-                        NextPulseOnTime = -1;
-                        NextPulseOffTime = -1;
+                    //***********************************
+                    // Triggered Pulses
+                    //***********************************
+                    long currentTime = Watch.ElapsedMilliseconds;
+                    if((currentTime > NextPulseOnTime + PhaseShift) && (NextPulseOnTime > -1)) {
+                        if(currentTime > (NextPulseOnTime + PhaseShift + period)) {
+                            log.WarnFormat("Missed pulse");
+                        }
+                        if(freq != 0.0) {
+                            _phaseShift = (period / 2);
+                            NextPulseOnTime = Math.Max(currentTime + period - PhaseShift, 0);  //Ensure this isn't ever < 0 in (very early) corner cases
+                            NextPulseOffTime = Math.Max(currentTime + (period / 2) - PhaseShift, 0);
+                        } else {
+                            RaisePulse(true); //Turn back to on
+                            NextPulseOnTime = -1;
+                            NextPulseOffTime = -1;
+                        }
+
+                        IsPulseOn = true; //Explicitly Pulse On
+                        RaisePulse(IsPulseOn);
                     }
 
-                    IsPulseOn = true; //Explicitly Pulse On
-                    RaisePulse(IsPulseOn);
+                    if((currentTime > NextPulseOffTime + PhaseShift) && (NextPulseOffTime > -1)) {
+                        IsPulseOn = false;  //Explicitly Pulse Off
+                        RaisePulse(IsPulseOn);
+                        NextPulseOffTime = -1; // Only send one off pulse
+                    }
                 }
-
-                if((currentTime > NextPulseOffTime + PhaseShift) && (NextPulseOffTime > -1)) {
-                    IsPulseOn = false;  //Explicitly Pulse Off
-                    RaisePulse(IsPulseOn);
-                    NextPulseOffTime = -1; // Only send one off pulse
+                sw.Stop();
+                if(sw.Elapsed > TimeSpan.FromMilliseconds(50)) {
+                    log.InfoFormat("Long pulse calculation >> Elapsed time: {0}", sw.Elapsed);
                 }
-
                 if(_disposed) {
                     break;
                 }
@@ -195,9 +211,7 @@ namespace ThreeByte.DMX
         }
     }
 
-
-    public class StrobeEventArgs : EventArgs
-    {
+    public class StrobeEventArgs : EventArgs {
         public bool On { get; private set; }
 
         public StrobeEventArgs(bool on) {
