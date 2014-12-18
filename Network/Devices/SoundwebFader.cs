@@ -45,7 +45,8 @@ namespace ThreeByte.Network.Devices
             _header.CopyTo(bumpMessage, 1);
             SV_MASTER_GAIN.CopyTo(bumpMessage, 7);
 
-            percent = percent * short.MaxValue;
+            // *2 because short is signed.
+            percent = percent * short.MaxValue * 2;
             BitConverter.GetBytes(percent).Reverse().ToArray().CopyTo(bumpMessage, 9);
 
             PackAndSendMessage(bumpMessage);
@@ -59,7 +60,8 @@ namespace ThreeByte.Network.Devices
             _header.CopyTo(percentMessage, 1);
             SV_MASTER_GAIN.CopyTo(percentMessage, 7);
 
-            int percent = newPercent * short.MaxValue;
+            // *2 because short is signed.
+            int percent = newPercent * short.MaxValue * 2;
             BitConverter.GetBytes(percent).Reverse().ToArray().CopyTo(percentMessage, 9);
 
             PackAndSendMessage(percentMessage);
@@ -165,8 +167,8 @@ namespace ThreeByte.Network.Devices
         }
 
         public static int LevelToPercent(int level) {
-            int maxValue = 0;
-            int minValue = -280000;
+            int maxValue = 100000;
+            int minValue = -280617;
             level = Math.Max(level, minValue);
    
             return (int)Math.Round(((double)(level - minValue) / (double)(maxValue - minValue)) * 100.0);
