@@ -95,11 +95,10 @@ namespace ThreeByte.DMX {
         private void RunPulse() {
 
             while(true) {
-                Debug.Assert(NextPulseOnTime >= -1, "Next pulse should never be less than -1");
                 Stopwatch sw = Stopwatch.StartNew();
-
                 double freq;
                 lock(FrequencyLock) {
+                    Debug.Assert(NextPulseOnTime >= -1, string.Format("Next pulse should never be less than -1 ({0})", NextPulseOnTime));
                     freq = Frequency;
 
                     int period = 0;
@@ -107,10 +106,10 @@ namespace ThreeByte.DMX {
                         //True period: 1/Hz
                         period = (int)Math.Round(1000.0 / freq);
                     }
-                    if(period > 1000) {
-                        //The period should never be more than 1 second
-                        log.Info(string.Format("Period compression: {0} --> 1000", period));
-                        period = 1000;
+                    if(period > 2000) {
+                        //The period should never be more than 2 seconds
+                        //log.Info(string.Format("Period compression: {0} --> 1000", period));
+                        period = 2000;
                     }
 
                     //*********************************************
@@ -156,21 +155,25 @@ namespace ThreeByte.DMX {
                     //***********************************
                     long currentTime = Watch.ElapsedMilliseconds;
                     if((currentTime > NextPulseOnTime + PhaseShift) && (NextPulseOnTime > -1)) {
-                        if(currentTime > (NextPulseOnTime + PhaseShift + period)) {
-                            log.WarnFormat("Missed pulse");
-                        }
                         if(freq != 0.0) {
+                            if(currentTime > (NextPulseOnTime + PhaseShift + period)) {
+                                log.WarnFormat("Missed pulse. Freq: {0}", freq);
+                            }
                             _phaseShift = (period / 2);
                             NextPulseOnTime = Math.Max(currentTime + period - PhaseShift, 0);  //Ensure this isn't ever < 0 in (very early) corner cases
                             NextPulseOffTime = Math.Max(currentTime + (period / 2) - PhaseShift, 0);
+
+                            IsPulseOn = true; //Explicitly Pulse On
+                            RaisePulse(IsPulseOn);
                         } else {
-                            RaisePulse(true); //Turn back to on
+                            // Frequency is 0
+                            if(!IsPulseOn) {
+                                IsPulseOn = true;
+                                RaisePulse(IsPulseOn); //Turn back to on
+                            }
                             NextPulseOnTime = -1;
                             NextPulseOffTime = -1;
                         }
-
-                        IsPulseOn = true; //Explicitly Pulse On
-                        RaisePulse(IsPulseOn);
                     }
 
                     if((currentTime > NextPulseOffTime + PhaseShift) && (NextPulseOffTime > -1)) {
@@ -178,7 +181,7 @@ namespace ThreeByte.DMX {
                         RaisePulse(IsPulseOn);
                         NextPulseOffTime = -1; // Only send one off pulse
                     }
-                }
+                }  // lock(FrequencyLock)
                 sw.Stop();
                 if(sw.Elapsed > TimeSpan.FromMilliseconds(50)) {
                     log.InfoFormat("Long pulse calculation >> Elapsed time: {0}", sw.Elapsed);
