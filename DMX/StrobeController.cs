@@ -195,6 +195,13 @@ namespace ThreeByte.DMX {
             }
         }
 
+        public void Refresh() {
+            // Force a pulse with the current state to be sent.
+            lock(FrequencyLock) {
+                RaisePulse(IsPulseOn);
+            }
+        }
+
         public event EventHandler<StrobeEventArgs> Pulse;
         private void RaisePulse(bool on) {
             var handler = Pulse;
