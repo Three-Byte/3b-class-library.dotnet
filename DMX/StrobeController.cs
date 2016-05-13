@@ -14,9 +14,10 @@ namespace ThreeByte.DMX {
 
         private Stopwatch Watch = Stopwatch.StartNew();
         private Thread PulseThread;
-        private static readonly bool HIGH_PRIORITY = true;
+        private readonly bool HighPriority;
 
-        public StrobeController() {
+        public StrobeController(bool highPriority = true) {
+            HighPriority = highPriority;
             PulseThread = new Thread(new ThreadStart(RunPulse));
             PulseThread.Start();
         }
@@ -189,7 +190,7 @@ namespace ThreeByte.DMX {
                 if(_disposed) {
                     break;
                 }
-                if(!HIGH_PRIORITY) {
+                if(!HighPriority) {
                     Thread.Sleep(1);
                 }
             }
