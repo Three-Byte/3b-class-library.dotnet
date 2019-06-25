@@ -314,6 +314,11 @@ namespace ThreeByte.Network.Devices
             _netLink.SendMessage("getStatus");
         }
 
+        // Just send a raw message through to Watchout.
+        public void SendRaw(string message) {
+            _netLink.SendMessage(message);
+        }
+
         public void Play(string timeline = null) {
             string message = "run";
             if(timeline != null) {
